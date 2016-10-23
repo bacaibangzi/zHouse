@@ -45,7 +45,7 @@ public class AccountLogin extends BaseAction{
 	}
 	@RequestMapping(value="/checkMobi", method = RequestMethod.GET)
 	@ResponseBody
-	public String checkMobi(@RequestParam String uiMobile){
+	public String checkMobi(@RequestParam String uiMobile){  
 		Map<String, Object> conditionMap = new HashMap<String, Object>();
 		List<UserInfo> userInfo = null;
 		try {
