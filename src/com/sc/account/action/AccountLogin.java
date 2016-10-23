@@ -34,7 +34,7 @@ import com.sc.system.pojo.UserInfo;
 public class AccountLogin extends BaseAction{
 	
 	@Autowired
-	private IMerchantUser iMerchantUser; 
+	private IMerchantUser iMerchantUser;  
 
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
