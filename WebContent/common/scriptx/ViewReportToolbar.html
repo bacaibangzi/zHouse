@@ -1,0 +1,178 @@
+<%@include file="/internet/common.jsp"%>
+<%--
+作者：Administrator
+部门：
+创建时间：Mon Apr 17 14:26:24 CST 2006
+
+描述：通过向导自动产生entity表单输入的jsp页面
+--%>
+<!-- 插入打印控件 -->
+
+
+<!-- 数字签名 -->
+<OBJECT classid=clsid:127698e4-e730-4e5c-a2b1-21490a70c8a1 style="height:0px;width:0px;"
+        codebase="xenrlinf.cab#Version=5,131,3659,0" id=XEnroll name=XEnroll VIEWASTEXT></OBJECT>
+
+<OBJECT id="oCAPICOM" codeBase="capicom.cab#version=2.1.0.2" style="height:0px;width:0px;"
+        classid="clsid:A996E48C-D3DC-4244-89F7-AFA33EC60679" VIEWASTEXT></OBJECT>
+
+<Script Language="VBScript" src="installRoot.js"></Script>
+
+<!-- MeadCo Security Manager -->
+
+<div style="display:none">
+    <object id="secmgr" style="DISPLAY: none" codeBase="smsx.cab#Version=6,4,438,06"
+            classid="clsid:5445BE81-B796-11D2-B931-002018654E2E" viewastext>
+        <param name="GUID" value="{816FDDC3-5863-4785-94D3-64EFFBE8D615}">
+        <!-- 用第一步产生的 GUID 替换此处{ }内的 GUID -->
+        <param name="PATH" value="sxlic.mlf">
+        <param name="REVISION" value="0">
+        <param name="PerUser" value="true">
+    </object>
+    <!-- MeadCo ScriptX Factory Component -->
+    <object id="factory" classid="clsid:1663ED61-23EB-11D2-B92F-008048FDD814" viewastext>
+    </object>
+</div>
+
+<style media="print" type="text/css">
+    .Noprint {
+        display: none
+    }
+</style>
+
+
+<script language="javascript">
+    function installAuto() {
+        installRoot();
+    }
+
+    function directPrint() {
+        if (window.resetMargin)
+            resetMargin();
+
+        factory.printing.Print(false);
+    }
+
+    function pageSetUp() {
+        if (window.resetMargin)
+            resetMargin();
+
+        factory.printing.Print();
+    }
+
+    function pagePreview() {
+        if (window.resetMargin)
+            resetMargin();
+
+        factory.printing.Preview();
+    }
+
+    function AllAreaWord() {
+        var oWD = new ActiveXObject("Word.Application");
+        var oDC = oWD.Documents.Add("", 0, 1);
+        var oRange = oDC.Range(0, 1);
+        var sel = document.body.createTextRange();
+        sel.moveToElementText(document.getElementById('page1'));
+        sel.select();
+        sel.execCommand("Copy");
+        oRange.Paste();
+        oWD.Application.Visible = true;
+    }
+
+    function window.onload() {
+        //factory.printing.printer     =		"Adobe PDF";
+        //factory.printing.paperSize     =     "A4";
+
+        factory.printing.header = "";
+        factory.printing.footer = "";
+        factory.printing.portrait = true;
+        factory.printing.leftMargin = 15.35;
+        factory.printing.topMargin = 9.35;
+        factory.printing.rightMargin = 0.75;
+        factory.printing.bottomMargin = 1.5;
+    }
+</script>
+<table align="center" id="aaa" class="Noprint" width="60%">
+    <tr>
+        <td colspan="3">
+            安装成功后，如打印机正常走纸，则控件安装成功。
+        </td>
+    </tr>
+    <tr>
+        <td><input id="idPrint1" type="button" value="打印本页" onclick="directPrint()"></td>
+        <td><input id="idPrint2" type="button" value="选择打印机打印" onclick="pageSetUp()"></td>
+        <td><input id="idPrint3" type="button" value="打印预览" onclick="pagePreview()"></td>
+    </tr>
+</table>
+        <hr>
+<table align="center" width="60%">
+    <tr>
+        <td >
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td >
+            点此<input type="button" onclick="installAuto()" value="自动安装">，如自动安装失败，请按以下方法手动安装。
+        </td>
+    </tr>
+
+    <tr>
+        <td >
+            &nbsp;&nbsp;&nbsp;&nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td >
+        如自动安装失败，请按以下方法手动安装：
+        </td>
+    </tr>
+
+
+    <tr>
+        <td>
+            1:右击<a href="../../jdy/common/downloadfile.jsp?fileaddress=common/scriptx/smsx.exe&filename=smsx.exe">“smsx6.5"</a>,另存为，下载后双击安装。
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            2:右击<a href="../../jdy/common/downloadfile.jsp?fileaddress=common/scriptx/Root.cer&filename=Root.cer">“root.cer"</a> ,另存为，下载后双击安装。
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            3:右击<a href="../../jdy/common/downloadfile.jsp?fileaddress=common/scriptx/scriptx.reg&filename=scriptx.reg">“scriptx.reg"</a> ,另存为，下载后双击安装。
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            若打印证书时需指定打印某一页证书，请安装版本7，方法同上。请先安装上诉三个文件后，再安装版本7<a
+                href="../../jdy/common/downloadfile.jsp?fileaddress=common/scriptx/ScriptX.msi&filename=ScriptX.msi">“smsx7"</a>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="color:red">注1：安装时请先退出360安全卫士，360杀毒软件。否则有可能认为是病毒。该文件非病毒，请放心安装。</td>
+    </tr>
+    <tr>
+        <td style="color:red">注2：请右击文件名，“另存为”下载文件后手动安装。如需安装版本7，请先安装6.5，否则安装失败。</td>
+    </tr>
+    <tr>
+        <td style="color:red">注3：安装过程中所有提示选择“是”或“YES”。</td>
+    </tr>
+    <tr>
+        <td style="color:red">注4：使用IE9及以上级别浏览器时，手动安装第二步时，安装至如下图所示界面时，请按图示选择操作。</td>
+    </tr>
+    <tr>
+        <td >
+            <img src="ie9.jpg" alt="">
+        </td>
+    </tr>
+
+
+
+</table>
+

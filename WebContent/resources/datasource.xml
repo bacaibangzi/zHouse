@@ -1,0 +1,7392 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DatasourceManager xmlVersion="20141222" releaseVersion="8.0.0">
+<ConnectionMap>
+<Connection name="FRDemo" class="com.fr.data.impl.JDBCDatabaseConnection">
+<DatabaseAttr/>
+<JDBCDatabaseAttr url="jdbc:sqlite://${ENV_HOME}/../FRDemo.db" driver="org.sqlite.JDBC" user="" password="___" encryptPassword="true">
+<DBCPAttr/>
+</JDBCDatabaseAttr>
+</Connection>
+<Connection name="CateSystem" class="com.fr.data.impl.JDBCDatabaseConnection">
+<DatabaseAttr/>
+<JDBCDatabaseAttr url="jdbc:mysql://192.168.1.81/cate_system" driver="com.mysql.jdbc.Driver" user="root" password="___0022007c0039003b005100e3" encryptPassword="true">
+<DBCPAttr/>
+</JDBCDatabaseAttr>
+</Connection>
+<Connection name="Yqs" class="com.fr.data.impl.JDBCDatabaseConnection">
+<DatabaseAttr/>
+<JDBCDatabaseAttr url="jdbc:mysql://scyunpos.mysql.rds.aliyuncs.com:3306/cate_system" driver="com.mysql.jdbc.Driver" user="scpos" password="___007b002a006e0037005400e7001d0027005e00170059005e0028" encryptPassword="true">
+<DBCPAttr/>
+</JDBCDatabaseAttr>
+</Connection>
+<Connection name="llz" class="com.fr.data.impl.JDBCDatabaseConnection">
+<DatabaseAttr/>
+<JDBCDatabaseAttr url="jdbc:mysql://scyunpos.mysql.rds.aliyuncs.com:3306/llz" driver="com.mysql.jdbc.Driver" user="scpos" password="___007b002a006e0037005400e7001d0027005e00170059005e0028" encryptPassword="true">
+<DBCPAttr/>
+</JDBCDatabaseAttr>
+</Connection>
+<Connection name="sdk" class="com.fr.data.impl.JDBCDatabaseConnection">
+<DatabaseAttr/>
+<JDBCDatabaseAttr url="jdbc:mysql://203.166.187.198:3306/GGmewuu" driver="com.mysql.jdbc.Driver" user="GGadmin" password="___003d00600067006a001300a0005e00360053006d003b003d005700ff0003" encryptPassword="true">
+<DBCPAttr/>
+</JDBCDatabaseAttr>
+</Connection>
+</ConnectionMap>
+<TableDataMap>
+<TableData name="上报用户" class="com.fr.data.impl.EmbeddedTableData">
+<Parameters/>
+<DSName>
+<![CDATA[]]></DSName>
+<ColumnNames>
+<![CDATA[一级用户,,.,,二级用户,,.,,三级用户]]></ColumnNames>
+<ColumnTypes>
+<![CDATA[java.lang.String,java.lang.String,java.lang.String]]></ColumnTypes>
+<RowData>
+<![CDATA[.k]A)iairdebf`Z?%*?iWWldlV9.pJ^#bc:389nqsVb^nZ6i\W>SsfoI!rr~
+]]></RowData>
+</TableData>
+<TableData name="会员消费明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="no"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select mno, price, shiji,rmk, DATE ,mengd
+  from (select t1.MD_VCH_MEMBER_NO as mno,
+               t1.MD_NUM_DEPOSIT as price,
+               t1.MD_NUM_REALA_MOUNT as shiji,
+               CASE LENGTH(trim(t1.MD_VCH_MEMO))
+                 WHEN 0 THEN
+                  CASE t1.md_ch_pay_mode
+                    WHEN '5' THEN
+                     '返现'
+                    ELSE
+                     t1.MD_VCH_MEMO
+                  END
+                 ELSE
+                  t1.MD_VCH_MEMO
+               END as rmk,
+               t1.DATE,'' mengd
+          from cvs_member_deposit t1
+         where   t1.MD_VCH_MEMBER_NO = '${no}' and  t1.org_Code like CONCAT('${orgCode}', '%')
+        UNION ALL
+        select  t1.mp_vch_member_no as mno,
+				t1.mp_num_pay as price,
+				t1.mp_num_pay as shiji,
+			  '消费' as rmk,
+				mp_dt_oper_date as DATE , t2.oi_name mengd
+
+from cvs_member_pay t1 ,org_info t2
+
+where t1.org_code = t2.OI_CODE
+ 
+         and  t1.mp_vch_member_no = '${no}' 
+         and  t1.org_Code like CONCAT('${orgCode}', '%')
+         ) T
+ order by T.DATE  desc
+]]></Query>
+</TableData>
+<TableData name="本地月分析报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2014-10-13]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2015-10-13]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O>
+<![CDATA[000000050002000100010001]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT A.bd_ch_dish_no,
+       CC.di_vch_dish_name,
+       e.DU_VCH_UNIT_NAME as di_ch_unit_no,
+       ifnull(SUM(A.bd_num_num - A.bd_num_back), 0) num_num,
+       CC.di_num_price as num_price1,
+       CONCAT(date_format(B.dt_date, '%Y'),
+              '年',
+              date_format(B.dt_date, '%m'),
+              '月') dt_date
+  FROM order_dish       A,
+       day_sumup       B,
+       CHECK_OUT_MASTER D,
+       dish_info           CC,
+       dish_unit e 
+ where A.bd_ch_dish_no = CC.di_ch_dish_no
+   and (CC.DI_CH_UNIT_NO = e.DU_CH_UNIT_NO)
+   AND A.bd_ch_bill_no = D.com_ch_bill_no
+   and A.bd_ch_pay_no = D.com_ch_pay_no
+   and D.com_ch_state = 'Y'
+   and CC.di_ch_dish_type_no like '%'
+   and CC.di_ch_sub_type_no like '%'
+   and CC.di_ch_dish_no like '%'
+   and D.com_dt_oper_date >= B.dt_begin
+   and D.com_dt_oper_date <= B.dt_eND
+   and date_format(B.dt_date, '%Y-%m') >= date_format('${dateStr1}', '%Y-%m')
+   and date_format(B.dt_date, '%Y-%m') <= date_format('${dateStr2}', '%Y-%m')
+   and A.org_code = B.org_code and A.org_code = D.org_code and A.org_code = CC.org_code and A.org_code = '${orgCode}'
+   and A.ORG_CODE = e.ORG_CODE
+ group by A.bd_ch_dish_no,
+          CC.di_num_price,
+          CONCAT(date_format(B.dt_date, '%Y'),
+                 '年',
+                 date_format(B.dt_date, '%m'),
+                 '月'),
+          CC.di_vch_dish_name,
+          CC.di_ch_unit_no]]></Query>
+</TableData>
+<TableData name="本地日分析报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2014-10-13]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2015-10-13]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O>
+<![CDATA[000000050002000100010001]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+ A.bd_ch_dish_no,
+ CC.di_vch_dish_name,
+ e.DU_VCH_UNIT_NAME as di_ch_unit_no,
+ ifnull(SUM(ifnull(A.bd_num_num - A.bd_num_back, 0)), 0) num_num,
+ CC.num_price1, date_format(B.dt_date, '%Y-%m-%d') dt_date
+ FROM order_dish A, day_sumup B, CHECK_OUT_MASTER D,
+			(Select distinct
+				a.di_ch_dish_no,
+				a.di_ch_unit_no,
+				a.di_vch_dish_name,
+				a.di_num_price as num_price1
+				from
+					dish_info a,
+					order_dish b
+				where
+					di_ch_stopflag <> 'Y'
+				and b.bd_ch_dish_no = a.di_ch_dish_no
+				and a.di_ch_dish_type_no like '%'
+				and a.di_ch_sub_type_no like '%'
+				and a.di_ch_dish_no like '%' union Select di_ch_dish_no,
+				di_ch_unit_no, di_vch_dish_name, di_num_price as num_price1
+				from dish_info where di_ch_stopflag <> 'Y'
+				and di_ch_dish_type_no like '%'
+				and di_ch_sub_type_no like '%'
+				and org_code = '${orgCode}'
+				and di_ch_dish_no like '%') CC, dish_unit e
+				where A.bd_ch_dish_no = CC.di_ch_dish_no
+				and (CC.DI_CH_UNIT_NO = e.DU_CH_UNIT_NO)
+				AND A.bd_ch_bill_no = D.com_ch_bill_no
+				and A.bd_ch_pay_no = D.com_ch_pay_no
+				and D.com_ch_state = 'Y'
+				and D.com_dt_oper_date >= B.dt_begin
+				and D.com_dt_oper_date <= B.dt_eND
+				and B.dt_date >= '${dateStr1}' and B.dt_date <= '${dateStr2}'
+				and A.org_code = B.org_code
+				and A.org_code = D.org_code
+				and A.org_code = '${orgCode}'
+				and A.ORG_CODE = e.ORG_CODE
+				group by A.bd_ch_dish_no, CC.num_price1, B.dt_date, CC.di_vch_dish_name, CC.di_ch_unit_no]]></Query>
+</TableData>
+<TableData name="库存供应商结算" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="mmc"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT 
+
+T2.MATERIAL_CODE,T2.MATERIAL_NAME, T2.FORMAT,T2.UNIT_NAME, T2.PURCHASE_PRICE,T2.PURCHASE_NUM,T2.PURCHASE_AMOUNT ,T3.supplier_name
+
+FROM
+
+material_purchase_order T1,
+material_purchase_order_detail T2,
+material_base_info T3
+
+WHERE
+
+T1.UUID = T2.UUID
+and t2.MATERIAL_CODE = T3.CODE
+and T1.ORG_CODE = T2.ORG_CODE
+and T2.ORG_CODE = T3.ORG_CODE
+and T1.EXAMINE_TIME BETWEEN  '${dateStr1}'   and '${dateStr2}'
+and t1.org_Code = '${orgCode}' 
+and IFNULL(t3.supplier_name,'')   like CONCAT('${mmc}', '%')
+]]></Query>
+</TableData>
+<TableData name="连锁会员消费明细报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="memberno"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	mno,
+	price,
+	rmk,
+	DATE
+FROM
+	(
+		SELECT
+			t1.MD_VCH_MEMBER_NO AS mno,
+			t1.MD_NUM_DEPOSIT AS price,
+			CASE LENGTH(trim(t1.MD_VCH_MEMO))
+		WHEN 0 THEN
+			CASE t1.md_ch_pay_mode
+		WHEN '5' THEN
+			'返现'
+		ELSE
+			t1.MD_VCH_MEMO
+		END
+		ELSE
+			t1.MD_VCH_MEMO
+		END AS rmk,
+		t1.DT_OPER_DATE AS DATE
+	FROM
+		cvs_member_deposit t1
+	WHERE
+		t1.org_code = '${orgCode}'
+	and t1.MD_VCH_MEMBER_NO = '${memberno}'
+	AND t1.DT_OPER_DATE >= '${dateStr1}'
+	AND t1.DT_OPER_DATE <= '${dateStr2}'
+	UNION ALL
+		SELECT
+			t2.COD_VCH_VOUCHER_NO AS mno,
+			t2.COD_NUM_REAL_AMOUNT AS price,
+			'消费' AS rmk,
+			t2.COD_DT_OPER_DATE AS DATE
+		FROM
+			cvs_check_out_detail t2
+		WHERE
+			t2.org_code = '${orgCode}'
+		and t2.COD_VCH_VOUCHER_NO = '${memberno}'
+		AND t2.COD_DT_OPER_DATE >= '${dateStr1}'
+		AND t2.COD_DT_OPER_DATE <= '${dateStr2}'
+	) T
+ORDER BY
+	T.DATE DESC]]></Query>
+</TableData>
+<TableData name="库存门店结算" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+
+t1.DISTRIBUTION_ORG_NAME, t1.DISTRIBUTION_DATE ,t2.MATERIAL_CODE ,t2.MATERIAL_NAME ,t2.UNIT_NAME , t2.NUM, t2.PRICE ,t2.AMOUNT , t2.DIS_PRICE,t2.DIS_AMOUNT
+
+FROM
+material_stock_distribution t1 ,
+material_stock_distribution_detail t2
+WHERE 
+t1.UUID = t2.UUID
+and t1.ORG_CODE = t2.ORG_CODE
+
+and t1.DISTRIBUTION_STATUS >0
+
+AND t1.DISTRIBUTION_DATE BETWEEN '${dateStr1}' AND '${dateStr2}'
+
+and t1.org_code = '${orgCode}'
+]]></Query>
+</TableData>
+<TableData name="ORGDIC" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode"/>
+<O>
+<![CDATA[00000001]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select oi.OI_CODE as org_code,oi.OI_NAME from org_info as oi
+where oi.OI_CODE like concat('','${orgCode}','%')
+and oi.OI_CODE != '0000']]></Query>
+</TableData>
+<TableData name="会员充值退卡汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-08 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="mtel"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="mno"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[
+select  tt2. no,tt2.MD_NUM_REALA_MOUNT, tt2.MI_VCH_MEMBER , tt2.MI_VCH_HAND_TEL , tt2.amount ,tt2.chongz, tt2.tuik ,tt2.pay_mode, tt2.pay_org  , TT1.jingxsName   , tt1.orgName , tt1.jigName 
+
+ from
+
+(
+
+select  t1.oi_code as orgCode ,t1.oi_name as orgName , t2.oi_code as jingxsCode , t2.oi_name as jingxsName , t3.oi_code as jigCode , t3.oi_name as jigName  from 
+(
+select  oi_code,oi_name,oi_type, get_jingxs(oi_code) as jingxsCode,  get_jig(oi_code) as jigCode    from org_info where oi_code  like concat('', '${orgCode1}', '%')  
+) t1 left join org_info t2 on t1.jingxsCode = t2.oi_code  left join org_info t3 on t1.jigCode = t3.oi_code 
+
+where t1.oi_code <> jingxsCode and t1.oi_code <> jigCode 
+
+) TT1
+
+left join 
+
+(
+SELECT t2.MI_VCH_MEMBER_NO as no,t1.MD_NUM_REALA_MOUNT, t2.MI_VCH_MEMBER , t2.MI_VCH_HAND_TEL , t2.amount ,t1.chongz, t1.tuik ,t1.pay_mode, t1.pay_org 
+
+FROM
+(
+select  md_vch_member_no ,  
+
+ sum(CASE md_ch_deposit_mode WHEN 1 THEN  md_num_deposit
+ ELSE 0 END ) chongz ,  
+ sum(MD_NUM_REALA_MOUNT) MD_NUM_REALA_MOUNT,	
+ sum(CASE md_ch_deposit_mode WHEN 8 THEN  md_num_deposit 
+
+WHEN 5 THEN md_num_deposit 
+
+ 
+ ELSE 0 END ) tuik ,
+
+	CASE md_ch_pay_mode when '' then '云端'  WHEN 1 THEN '现金' WHEN 2 THEN '银行卡' WHEN 3 THEN '其他' END as pay_mode  ,  (case  ifnull(COD_CH_PAY_NO,'') when '' then org_code else  COD_CH_PAY_NO end) as pay_org
+
+from cvs_member_deposit where ORG_CODE like CONCAT('${orgCode1}', '%')and  DATE >='${dateStr1}'  and DATE <='${dateStr2}'
+
+
+GROUP BY md_vch_member_no  ,md_ch_pay_mode
+) T1 
+
+,
+
+(
+SELECT MI_VCH_MEMBER_NO, MI_VCH_MEMBER ,mi_vch_card_no, MI_CH_TYPE_NO, MI_VCH_HAND_TEL   , IFNULL(num_amount ,0) amount, MI_DT_OPER_DATE,
+
+case MI_CH_STATE
+WHEN '1' THEN '正常'
+WHEN '2' THEN '止付'
+WHEN '3' THEN '挂失'
+WHEN '4' THEN '作废'
+WHEN '5' THEN '已退卡'
+END  as MI_CH_STATE, 
+case MI_CH_CARD_FLAG
+WHEN 'Y' THEN '已持卡'
+WHEN 'N' THEN '未持卡'
+END as MI_CH_CARD_FLAG
+
+ from cvs_member_info  T1
+
+ LEFT JOIN
+
+cvs_member_curamount T2
+ON t1.MI_VCH_MEMBER_NO = t2.vch_memberno and t1.org_code = t2.org_code
+WHERE T1.ORG_CODE like CONCAT('${orgCode1}', '%')
+
+) T2
+where T1.md_vch_member_no = t2.MI_VCH_MEMBER_NO
+
+
+and MI_VCH_MEMBER_NO like CONCAT('${mno}', '%')
+
+and ifnull(MI_VCH_HAND_TEL,'') like CONCAT('${mtel}', '%')
+
+) 
+
+TT2  on  tt1.orgCode = tt2.pay_org
+]]></Query>
+</TableData>
+<TableData name="连锁会员门店应收应付汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-08-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	t2.orgName,
+	t2.orgCode,
+	t1.opOrgName,
+	t1.opOrgCode,
+	SUM((CASE t1.rmk WHEN '充值' THEN t1.price ELSE 0 END)) AS chongZhi,
+	SUM((CASE t1.rmk WHEN '消费' THEN t1.price ELSE 0 END)) AS xiaoFei,
+	SUM(-1*(CASE t1.rmk WHEN '取现' THEN t1.price ELSE 0 END)) AS quXian,
+	SUM(-1*(CASE t1.rmk WHEN '退卡' THEN t1.price ELSE 0 END)) AS tuiKa
+FROM
+	(
+		SELECT
+			opOrgName,
+			opOrgCode,
+			SUM(price) AS price,
+			rmk
+		FROM
+			(
+				SELECT
+					a.OI_NAME AS opOrgName,
+					t1.COD_CH_PAY_NO AS opOrgCode,
+					t1.MD_NUM_DEPOSIT AS price,
+					CASE LENGTH(trim(t1.MD_VCH_MEMO))
+				WHEN 0 THEN
+					CASE t1.md_ch_pay_mode
+				WHEN '5' THEN
+					'返现'
+				ELSE
+					t1.MD_VCH_MEMO
+				END
+				ELSE
+					t1.MD_VCH_MEMO
+				END AS rmk
+				FROM
+					cvs_member_deposit t1,
+					org_info a
+				WHERE
+					a.OI_CODE = t1.COD_CH_PAY_NO
+				AND t1.COD_CH_PAY_NO LIKE '${orgCode1}%'
+				AND t1.DT_OPER_DATE >= '${dateStr1}'
+				AND t1.DT_OPER_DATE <= '${dateStr2}'
+				UNION ALL
+					SELECT
+						b.OI_NAME AS opOrgName,
+						t2.COD_VCH_MEMO AS opOrgCode,
+						t2.COD_NUM_REAL_AMOUNT AS price,
+						'消费' AS rmk
+					FROM
+						cvs_check_out_detail t2,
+						org_info b
+					WHERE
+						b.OI_CODE = t2.COD_VCH_MEMO
+					AND t2.COD_VCH_MEMO LIKE '${orgCode1}%'
+					AND t2.COD_DT_OPER_DATE >= '${dateStr1}'
+					AND t2.COD_DT_OPER_DATE <= '${dateStr2}'
+			) T
+		GROUP BY
+			T.opOrgCode,
+			T.rmk
+		ORDER BY
+			opOrgCode
+	) t1,
+	(
+		SELECT
+			OI_NAME AS orgName,
+			OI_CODE AS orgCode
+		FROM
+			org_info
+		WHERE
+			OI_CODE = '${orgCode1}'
+	) t2
+group by opOrgCode]]></Query>
+</TableData>
+<TableData name="连锁会员消费汇总报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200010001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2014-10-13 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-10-13 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[	select
+		t1.sn,
+		t1.vch_memberno as memberno,
+		t2.MI_VCH_MEMBER as vch_member, 
+		ifnull(ifnull(t2.MI_VCH_TEL,t2.MI_VCH_HAND_TEL),'')as vch_tel,
+		 (case t2.mi_ch_state when '1' then '正常' when '3' then '挂失' when '4' then '作废' else '' end) as ch_state,
+		t3.rechargeAmount,
+		(t3.rechargeAmount - t1.num_amount) as usedAmount,
+		t1.num_amount,
+		t1.num_point,
+		t2.DATE
+	from cvs_member_curamount t1 , cvs_member_info t2 ,( select MD_VCH_MEMBER_NO, sum(MD_NUM_DEPOSIT) as rechargeAmount, org_code  from cvs_member_deposit where  MD_VCH_MEMO = '充值' and DT_OPER_DATE >= '${dateStr1}' and DT_OPER_DATE <= '${dateStr2}' and org_code = '${orgCode1}' GROUP BY MD_VCH_MEMBER_NO)t3
+	where 
+		t1.vch_memberno = t2.MI_VCH_MEMBER_NO
+		and t1.vch_memberno = t3.MD_VCH_MEMBER_NO
+		and t1.DATE >= '${dateStr1}'
+		and t1.DATE <= '${dateStr2}'
+		and t1.org_Code = t3.org_Code
+		and t1.org_Code = t2.org_Code
+		and t1.org_code = '${orgCode1}']]></Query>
+</TableData>
+<TableData name="连锁会员门店应收应付会员详情" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="opOrgCode"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	mno,
+	SUM(price),
+	rmk,
+	DATE
+FROM
+	(
+		SELECT
+			t1.MD_VCH_MEMBER_NO AS mno,
+			t1.MD_NUM_DEPOSIT AS price,
+			CASE LENGTH(trim(t1.MD_VCH_MEMO))
+		WHEN 0 THEN
+			CASE t1.md_ch_pay_mode
+		WHEN '5' THEN
+			'返现'
+		ELSE
+			t1.MD_VCH_MEMO
+		END
+		ELSE
+			t1.MD_VCH_MEMO
+		END AS rmk,
+		t1.DT_OPER_DATE AS DATE
+	FROM
+		cvs_member_deposit t1
+	WHERE
+		t1.COD_CH_PAY_NO = '${opOrgCode}'
+	AND t1.DT_OPER_DATE >= '${dateStr1}'
+	AND t1.DT_OPER_DATE <= '${dateStr2}'
+	UNION ALL
+		SELECT
+			t2.COD_VCH_VOUCHER_NO AS mno,
+			t2.COD_NUM_REAL_AMOUNT AS price,
+			'消费' AS rmk,
+			t2.COD_DT_OPER_DATE AS DATE
+		FROM
+			cvs_check_out_detail t2
+		WHERE
+			t2.COD_VCH_MEMO = '${opOrgCode}'
+		AND t2.COD_DT_OPER_DATE >= '${dateStr1}'
+		AND t2.COD_DT_OPER_DATE <= '${dateStr2}'
+	) T
+GROUP BY
+	mno,rmk
+ORDER BY
+	T.DATE DESC]]></Query>
+</TableData>
+<TableData name="连锁会员门店消费明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000050003000100110003]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-11 10:54:23]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	mno,
+	price,
+	rmk,
+	DATE
+FROM
+	(
+		SELECT
+			t1.MD_VCH_MEMBER_NO AS mno,
+			t1.MD_NUM_DEPOSIT AS price,
+			CASE LENGTH(trim(t1.MD_VCH_MEMO))
+		WHEN 0 THEN
+			CASE t1.md_ch_pay_mode
+		WHEN '5' THEN
+			'返现'
+		ELSE
+			t1.MD_VCH_MEMO
+		END
+		ELSE
+			t1.MD_VCH_MEMO
+		END AS rmk,
+		t1.DT_OPER_DATE AS DATE
+	FROM
+		cvs_member_deposit t1
+	WHERE
+		t1.COD_CH_PAY_NO = '${orgCode1}'
+	AND t1.DT_OPER_DATE >= '${dateStr1}'
+	AND t1.DT_OPER_DATE <= '${dateStr2}'
+	UNION ALL
+		SELECT
+			t2.COD_VCH_VOUCHER_NO AS mno,
+			t2.COD_NUM_REAL_AMOUNT AS price,
+			'消费' AS rmk,
+			t2.COD_DT_OPER_DATE AS DATE
+		FROM
+			cvs_check_out_detail t2
+		WHERE
+			t2.COD_CH_PAY_NO = '${orgCode1}'
+		AND t2.COD_DT_OPER_DATE >= '${dateStr1}'
+		AND t2.COD_DT_OPER_DATE <= '${dateStr2}'
+	) T
+ORDER BY
+	T.DATE DESC]]></Query>
+</TableData>
+<TableData name="餐饮连锁销售汇总排行表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-11 15:22:14]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	itemno,
+	itemname,
+	num,
+	amount,
+	realAmount,
+	orgName,
+	orgCode
+FROM
+	(
+		SELECT
+			a.bd_ch_pay_no,
+			a.bd_ch_dish_no AS itemno,
+			c.di_vCH_DISH_NAME AS itemname,
+			IfNull(
+				sum(a.bd_num_num - a.bd_num_back),
+				0
+			) num,
+			TRUNCATE (
+				IfNull(
+					sum(
+						CASE
+						WHEN a.ch_present_flag = 'Y' THEN
+							0
+						ELSE
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							)
+						END
+					),
+					0
+				),
+				2
+			) AS amount,
+			TRUNCATE (
+				IfNull(
+					sum(
+						CASE
+						WHEN a.ch_present_flag = 'Y' THEN
+							0
+						ELSE
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							) * (
+								CASE
+								WHEN a.bd_int_discount = 0 THEN
+									100
+								ELSE
+									a.bd_int_discount
+								END
+							) * 0.01
+						END
+					),
+					0
+				),
+				2
+			) realAmount
+		FROM
+			cvs_order_dish a,
+			cvs_check_out_master b,
+			dish_info c
+		WHERE
+			(
+				a.bd_ch_dish_no = c.di_ch_dish_no
+			)
+		AND (
+			a.bd_ch_pay_no = b.com_ch_pay_no
+		)
+		AND (
+			date_format(
+				b.com_dt_oper_date,
+				'%Y-%m-%d %H:%i'
+			) > '${dateStr1}'
+		)
+		AND (
+			date_format(
+				b.com_dt_oper_date,
+				'%Y-%m-%d %H:%i'
+			) <= '${dateStr2}'
+		)
+		AND a.org_code = b.org_code
+		AND a.org_code = c.org_code
+		AND a.org_code LIKE concat('${orgCode1}', '%')
+		GROUP BY
+			a.bd_ch_dish_no,
+			c.di_vCH_DISH_NAME
+		ORDER BY
+			amount DESC
+	) t1,
+	(
+		SELECT
+			a.OI_CODE AS orgCode,
+			a.OI_NAME AS orgName,
+			b.COD_CH_PAY_NO
+		FROM
+			org_info a,
+			cvs_check_out_detail b
+		WHERE
+			a.OI_CODE = b.COD_VCH_MEMO
+		AND a.OI_CODE LIKE concat('${orgCode1}', '%')
+	) t2
+WHERE
+	t1.bd_ch_pay_no = t2.COD_CH_PAY_NO
+	GROUP BY
+	itemno,orgCode
+UNION ALL
+	SELECT
+	'' AS itemno,
+	'' AS itemname,
+	'' AS num,
+	'' AS amount,
+	'' AS realAmount,
+	a.OI_NAME AS orgName,
+	a.OI_CODE AS orgCode
+FROM
+		org_info a
+WHERE
+a.OI_CODE LIKE concat('${orgCode1}', '%')
+AND a.OI_CODE!= '${orgCode1}'	]]></Query>
+</TableData>
+<TableData name="餐饮连锁门店销售汇总排行表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-18 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.amount,
+	TT2.discount,
+	TT2.present,
+	TT2.depositRate,
+	TT2.GivingRate,
+	TT2.actualAmount
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		c.COD_VCH_MEMO AS mengd_code,
+		sum(
+			(a.bd_num_num - a.bd_num_back) * (
+				a.bd_num_price + a.bd_num_price_add
+			)
+		) AS amount,
+		Round(
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			),
+			2
+		) AS discount,
+		Round(
+			sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			),
+			2
+		) AS present,
+		(
+			CASE sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			)
+			WHEN 0.00 THEN
+				0.00
+			ELSE
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						ROUND(
+							(
+								ROUND(
+									sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										)
+									),
+									2
+								) - Round(
+									sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										) * (1 - a.bd_int_discount * 0.01)
+									),
+									2
+								)
+							) / sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							),
+							4
+						)
+					END
+				)
+			END
+		) AS depositRate,
+		(
+			CASE sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			)
+			WHEN 0.00 THEN
+				0.00
+			ELSE
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						ROUND(
+							(
+								ROUND(
+									sum(
+										CASE a.ch_present_flag
+										WHEN 'Y' THEN
+											(
+												(a.bd_num_num - a.bd_num_back) * (
+													a.bd_num_price + a.bd_num_price_add
+												) * a.bd_int_discount * 0.01
+											)
+										ELSE
+											0.00
+										END
+									),
+									2
+								)
+							) / sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							),
+							4
+						)
+					END
+				)
+			END
+		) AS GivingRate,
+		ROUND(
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				)
+			) - sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			) - sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			),
+			2
+		) AS actualAmount
+	FROM
+		cvs_order_dish a,
+		CVS_CHECK_OUT_MASTER b,
+		(
+			SELECT
+				ORG_CODE,
+				COD_CH_PAY_NO,
+				COD_VCH_MEMO
+			FROM
+				cvs_check_out_detail t
+			WHERE
+				(
+					date_format(
+						t.COD_DT_OPER_DATE,
+						'%Y-%m-%d %H:%i'
+					) > '${dateStr1}'
+				)
+			AND (
+				date_format(
+					t.COD_DT_OPER_DATE,
+					'%Y-%m-%d %H:%i'
+				) <= '${dateStr2}'
+			)
+			AND (
+				date_format(t.COD_DT_OPER_DATE, '%H:%i') >= '00:00'
+			)
+			AND (
+				date_format(t.COD_DT_OPER_DATE, '%H:%i') <= '23:59'
+			)
+			AND COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+		) c,
+		dish_info d
+	WHERE
+		(
+			a.bd_ch_pay_no = b.com_ch_pay_no
+		)
+	AND (
+		a.bd_ch_pay_no = c.COD_CH_PAY_NO
+	)
+	AND (
+		a.bd_ch_dish_no = d.di_ch_dish_no
+	)
+	AND (
+		a.bd_num_num - a.bd_num_back <> 0
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) > '${dateStr1}'
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) <= '${dateStr2}'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') >= '00:00'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') <= '23:59'
+	)
+	AND (a.bd_vch_oper_ID LIKE '%')
+	AND (a.org_code = b.org_code)
+	AND (a.org_code = c.org_code)
+	AND (c.COD_VCH_MEMO = d.org_code)
+	GROUP BY
+		c.COD_VCH_MEMO
+	ORDER BY
+		actualAmount
+) TT2 ON TT1.oi_code = TT2.mengd_code]]></Query>
+</TableData>
+<TableData name="餐饮连锁供应商结算汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-19 16:24:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.DT_VCH_DISH_TYPE_NAME,
+	TT2.dishname,
+	TT2.dish_unitno,
+	TT2.num,
+	TT2.amount,
+	TT2.price,
+	TT2.discount,
+	TT2.present,
+	TT2.depositRate,
+	TT2.GivingRate,
+	TT2.actualAmount
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		mengd_code,
+		DT_VCH_DISH_TYPE_NAME,
+		dishname,
+		dish_unitno,
+		num,
+		amount,
+		round(price, 2) AS price,
+		discount,
+		present,
+		depositRate,
+		GivingRate,
+		actualAmount
+	FROM
+		DISH_TYPE T1
+	LEFT JOIN (
+		SELECT
+			d.COD_VCH_MEMO AS mengd_code,
+			c.di_ch_dish_type_no AS dish_typeno,
+			a.bd_ch_dish_no AS dishno,
+			c.di_vch_dish_name AS dishname,
+			e.DU_VCH_UNIT_NAME AS dish_unitno,
+			sum(a.bd_num_num - a.bd_num_back) AS num,
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				)
+			) AS amount,
+			FORMAT(
+				(
+					(
+						sum(
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							)
+						)
+					) / sum(a.bd_num_num - a.bd_num_back)
+				),
+				2
+			) AS price,
+			Round(
+				sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					) * (1 - a.bd_int_discount * 0.01)
+				),
+				2
+			) AS discount,
+			Round(
+				sum(
+					CASE a.ch_present_flag
+					WHEN 'Y' THEN
+						(
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							) * a.bd_int_discount * 0.01
+						)
+					ELSE
+						0.00
+					END
+				),
+				2
+			) AS present,
+			(
+				CASE sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					) * (1 - a.bd_int_discount * 0.01)
+				)
+				WHEN 0.00 THEN
+					0.00
+				ELSE
+					(
+						CASE sum(
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							)
+						)
+						WHEN 0.00 THEN
+							0.00
+						ELSE
+							ROUND(
+								(
+									ROUND(
+										sum(
+											(a.bd_num_num - a.bd_num_back) * (
+												a.bd_num_price + a.bd_num_price_add
+											)
+										),
+										2
+									) - Round(
+										sum(
+											(a.bd_num_num - a.bd_num_back) * (
+												a.bd_num_price + a.bd_num_price_add
+											) * (1 - a.bd_int_discount * 0.01)
+										),
+										2
+									)
+								) / sum(
+									(a.bd_num_num - a.bd_num_back) * (
+										a.bd_num_price + a.bd_num_price_add
+									)
+								),
+								4
+							)
+						END
+					)
+				END
+			) AS depositRate,
+			(
+				CASE sum(
+					CASE a.ch_present_flag
+					WHEN 'Y' THEN
+						(
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							) * a.bd_int_discount * 0.01
+						)
+					ELSE
+						0.00
+					END
+				)
+				WHEN 0.00 THEN
+					0.00
+				ELSE
+					(
+						CASE sum(
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							)
+						)
+						WHEN 0.00 THEN
+							0.00
+						ELSE
+							ROUND(
+								(
+									ROUND(
+										sum(
+											CASE a.ch_present_flag
+											WHEN 'Y' THEN
+												(
+													(a.bd_num_num - a.bd_num_back) * (
+														a.bd_num_price + a.bd_num_price_add
+													) * a.bd_int_discount * 0.01
+												)
+											ELSE
+												0.00
+											END
+										),
+										2
+									)
+								) / sum(
+									(a.bd_num_num - a.bd_num_back) * (
+										a.bd_num_price + a.bd_num_price_add
+									)
+								),
+								2
+							)
+						END
+					)
+				END
+			) AS GivingRate,
+			ROUND(
+				sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					)
+				) - sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					) * (1 - a.bd_int_discount * 0.01)
+				) - sum(
+					CASE a.ch_present_flag
+					WHEN 'Y' THEN
+						(
+							(a.bd_num_num - a.bd_num_back) * (
+								a.bd_num_price + a.bd_num_price_add
+							) * a.bd_int_discount * 0.01
+						)
+					ELSE
+						0.00
+					END
+				),
+				2
+			) AS actualAmount,
+			c.di_ch_dish_type_no
+		FROM
+			cvs_order_dish a,
+			CVS_CHECK_OUT_MASTER b,
+			dish_info c,
+			(
+				SELECT
+					ORG_CODE,
+					COD_CH_PAY_NO,
+					COD_VCH_MEMO
+				FROM
+					cvs_check_out_detail t
+				WHERE
+					(
+						date_format(
+							t.COD_DT_OPER_DATE,
+							'%Y-%m-%d %H:%i'
+						) > '${dateStr1}'
+					)
+				AND (
+					date_format(
+						t.COD_DT_OPER_DATE,
+						'%Y-%m-%d %H:%i'
+					) <= '${dateStr2}'
+				)
+				AND (
+					date_format(t.COD_DT_OPER_DATE, '%H:%i') >= '00:00'
+				)
+				AND (
+					date_format(t.COD_DT_OPER_DATE, '%H:%i') <= '23:59'
+				)
+				AND COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+			) d,
+			dish_unit e
+		WHERE
+			(
+				a.bd_ch_pay_no = b.com_ch_pay_no
+			)
+		AND (
+			a.bd_ch_pay_no = d.COD_CH_PAY_NO
+		)
+		AND (
+			c.DI_CH_UNIT_NO = e.DU_CH_UNIT_NO
+		)
+		AND (c.ORG_CODE = e.ORG_CODE)
+		AND (
+			a.bd_ch_dish_no = c.di_ch_dish_no
+		)
+		AND (
+			a.bd_num_num - a.bd_num_back <> 0
+		)
+		AND b.com_dt_oper_date > '${dateStr1}'
+		AND b.com_dt_oper_date <= '${dateStr2}'
+		AND a.org_code = b.org_code
+		AND a.org_code = d.org_code
+		AND d.COD_VCH_MEMO = c.org_code
+		GROUP BY
+			c.di_ch_dish_type_no,
+			a.bd_ch_dish_no,
+			c.di_vch_dish_name,
+			c.di_ch_unit_no,
+			d.COD_VCH_MEMO
+		ORDER BY
+			c.di_ch_dish_type_no,
+			a.bd_ch_dish_no
+	) T2 ON T2.di_ch_dish_type_no = t1.DT_CH_DISH_TYPE_NO
+	WHERE
+		T1.org_Code = T2.mengd_code
+) TT2 ON TT1.oi_code = TT2.mengd_code]]></Query>
+</TableData>
+<TableData name="餐饮连锁营业收银汇总报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-01-10 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2015-04-10 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.amount,
+	TT2.actualAmount
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.COD_VCH_MEMO AS mengd_code,
+		sum(
+			CASE c.PM_ch_in_come_flag
+			WHEN 'Y' THEN
+				COD_num_real_amount
+			ELSE
+				0
+			END
+		) amount,
+		sum(a.COD_num_real_amount) actualAmount
+	FROM
+		cvs_check_out_detail a,
+		CVS_CHECK_OUT_MASTER b,
+		pay_mode c
+	WHERE
+		(
+			a.COD_ch_pay_no = b.COM_ch_pay_no
+		)
+	AND (
+		a.COD_ch_pay_mode_no = c.PM_ch_pay_mode_no
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) > '${dateStr1}'
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) <= '${dateStr2}'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') >= '00:00'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') <= '23:59'
+	)
+	AND (a.org_code = b.org_code)
+	AND (a.COD_VCH_MEMO = c.org_code)
+	AND (
+		a.COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+	)
+	GROUP BY
+		a.COD_VCH_MEMO
+	ORDER BY
+		actualAmount
+) TT2 ON TT1.oi_code = TT2.mengd_code]]></Query>
+</TableData>
+<TableData name="餐饮连锁营业收银汇总支付明细报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode"/>
+<O t="Formula" class="Formula">
+<Attributes>
+<![CDATA[=$$$]]></Attributes>
+</O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT 
+		      c.PM_VCH_PAY_MODE_NAME as payMode,
+			 sum(a.COD_NUM_REAL_AMOUNT) as amount
+		  FROM check_out_detail a, CHECK_OUT_MASTER b, pay_mode c,org_info d
+		 WHERE (a.COD_ch_pay_no = b.COM_ch_pay_no)
+		    and (b.COM_ch_state = 'Y')
+		    and (a.COD_ch_pay_mode_no = c.PM_ch_pay_mode_no)
+		    
+		   	and (date_format(b.com_dt_oper_date, '%Y-%m-%d %H:%i') > '${dateStr1}')
+		   	and (date_format(b.com_dt_oper_date, '%Y-%m-%d %H:%i') <= '${dateStr2}')
+
+		   and a.org_code = b.org_code 
+		   and a.org_code = c.org_code
+		   and a.org_code = d.OI_CODE
+		   and a.org_code = '${orgCode}' 
+		 Group by c.PM_CH_PAY_MODE_NO
+		 order by amount ]]></Query>
+</TableData>
+<TableData name="餐饮连锁门店菜品消费明细汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-04-01 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-13 00:00:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT2.itemno,
+	TT2.itemname,
+	TT2.num,
+	TT2.amount,
+	tt2.amount1,
+	TT1.zongb_name AS orgName,
+	TT1.zongb_code,
+	tt1.oi_code,
+	tt1.oi_name AS orgCode
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.bd_ch_dish_no AS itemno,
+		c.di_vCH_DISH_NAME AS itemname,
+		IfNull(
+			sum(a.bd_num_num - a.bd_num_back),
+			0
+		) num,
+		TRUNCATE (
+			IfNull(
+				sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					) * (
+						CASE a.bd_int_discount
+						WHEN 0 THEN
+							100
+						ELSE
+							a.bd_int_discount
+						END
+					) * 0.01
+				),
+				0
+			),
+			2
+		) amount,
+		b.mengd_code,
+		TRUNCATE (
+			IfNull(
+				sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					) * (
+						CASE a.bd_int_discount
+						WHEN 0 THEN
+							100
+						ELSE
+							a.bd_int_discount
+						END
+					) * 0.01
+				),
+				0
+			),
+			2
+		) amount1
+	FROM
+		cvs_order_dish a,
+		(
+			SELECT
+				t1.com_ch_pay_no,
+				t2.org_code,
+				t2.COD_VCH_MEMO AS mengd_code,
+				com_ch_state
+			FROM
+				cvs_CHECK_OUT_MASTER t1,
+				cvs_check_out_detail t2
+			WHERE
+				t1.org_code = t2.org_code
+			AND t1.COM_CH_PAY_NO = t2.COD_CH_PAY_NO
+			AND (
+				date_format(
+					t1.com_dt_oper_date,
+					'%Y-%m-%d %H:%i'
+				) > '${dateStr1}'
+			)
+			AND (
+				date_format(
+					t1.com_dt_oper_date,
+					'%Y-%m-%d %H:%i'
+				) <= '${dateStr2}'
+			)
+		) b,
+		dish_info c
+	WHERE
+		(
+			a.bd_ch_dish_no = c.di_ch_dish_no
+		)
+	AND (
+		a.bd_ch_pay_no = b.com_ch_pay_no
+	)
+	AND a.org_code = b.org_code
+	AND b.mengd_code = c.org_code
+	AND a.org_code LIKE concat('', '${orgCode1}', '%')
+	GROUP BY
+		a.bd_ch_dish_no,
+		c.di_vCH_DISH_NAME,
+		b.mengd_code
+	ORDER BY
+		amount DESC
+) TT2 ON tt1.oi_code = tt2.mengd_code]]></Query>
+</TableData>
+<TableData name="餐饮连锁门店营业额收入汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[0000]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-01-04 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-01-04 00:00:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.amount,
+	TT2.discount,
+	TT2.present,
+	TT2.depositRate,
+	TT2.GivingRate,
+	TT2.actualAmount
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		d.COD_VCH_MEMO AS mengd_code,
+		sum(
+			(a.bd_num_num - a.bd_num_back) * (
+				a.bd_num_price + a.bd_num_price_add
+			)
+		) AS amount,
+		Round(
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			),
+			2
+		) AS discount,
+		Round(
+			sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			),
+			2
+		) AS present,
+		(
+			CASE sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			)
+			WHEN 0.00 THEN
+				0.00
+			ELSE
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						ROUND(
+							(
+								ROUND(
+									sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										)
+									),
+									2
+								) - Round(
+									sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										) * (1 - a.bd_int_discount * 0.01)
+									),
+									2
+								)
+							) / sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							),
+							4
+						)
+					END
+				)
+			END
+		) AS depositRate,
+		(
+			CASE sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			)
+			WHEN 0.00 THEN
+				0.00
+			ELSE
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						ROUND(
+							(
+								ROUND(
+									sum(
+										CASE a.ch_present_flag
+										WHEN 'Y' THEN
+											(
+												(a.bd_num_num - a.bd_num_back) * (
+													a.bd_num_price + a.bd_num_price_add
+												) * a.bd_int_discount * 0.01
+											)
+										ELSE
+											0.00
+										END
+									),
+									2
+								)
+							) / sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							),
+							4
+						)
+					END
+				)
+			END
+		) AS GivingRate,
+		ROUND(
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				)
+			) - sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			) - sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			),
+			2
+		) AS actualAmount
+	FROM
+		cvs_order_dish a,
+		CVS_CHECK_OUT_MASTER b,
+		dish_info c,
+		(
+			SELECT
+				ORG_CODE,
+				COD_CH_PAY_NO,
+				COD_VCH_MEMO
+			FROM
+				cvs_check_out_detail t
+			WHERE
+				COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+		) d
+	WHERE
+		(
+			a.bd_ch_pay_no = b.com_ch_pay_no
+		)
+	AND
+		(
+			a.bd_ch_pay_no = d.COD_CH_PAY_NO
+		)	
+	AND (
+		a.bd_num_num - a.bd_num_back <> 0
+	)
+	AND (
+		b.com_dt_oper_date > '${dateStr1}'
+	)
+	AND (
+		b.com_dt_oper_date <= '${dateStr2}'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') >= '00:00'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') <= '23:59'
+	)
+	AND (
+		a.bd_ch_dish_no = c.di_ch_dish_no
+	)
+	AND (a.org_code = b.org_code)
+	AND (a.org_code = d.org_code)
+	AND (d.COD_VCH_MEMO = c.org_code)
+	GROUP BY
+		d.COD_VCH_MEMO
+) TT2 ON TT1.oi_code = TT2.mengd_code]]></Query>
+</TableData>
+<TableData name="餐饮连锁菜品销售退菜汇总表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000050002000100010001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2014-10-13 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2015-10-13 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.operator,
+	TT2.backNo,
+	TT2.backDish,
+	TT2.unitName,
+	TT2.amount
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		mengd_code,
+		operator,
+		backNo,
+		backDish,
+		unitName,
+		sum(amount) amount
+	FROM
+		(
+			SELECT
+				e.COD_VCH_MEMO AS mengd_code,
+				ifnull(a.BD_VCH_BACK_OPER_ID, '') operator,
+				a.BD_INT_FLOW_ID backNo,
+				c.DI_VCH_DISH_NAME backDish,
+				d.DU_VCH_UNIT_NAME unitName,
+				a.BD_NUM_BACK * (
+					a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+				) amount
+			FROM
+				cvs_order_dish a,
+				CVS_CHECK_OUT_MASTER b,
+				dish_info c,
+				dish_unit d,
+				(
+					SELECT
+						ORG_CODE,
+						COD_CH_PAY_NO,
+						COD_VCH_MEMO
+					FROM
+						cvs_check_out_detail t
+					WHERE
+						COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+				) e
+			WHERE
+				(
+					a.bd_ch_pay_no = b.COM_CH_PAY_NO
+				)
+			AND
+		(
+			a.bd_ch_pay_no = e.COD_CH_PAY_NO
+		)	
+			AND (
+				c.DI_CH_UNIT_NO = d.DU_CH_UNIT_NO
+			)
+			AND (a.BD_NUM_BACK <> 0)
+			AND (
+				a.BD_ch_dish_no = c.DI_ch_dish_no
+			)
+			AND (
+				c.DI_ch_dish_type_no LIKE '%'
+			)
+			AND (
+				date_format(
+					b.com_dt_oper_date,
+					'%Y-%m-%d %H:%i'
+				) > '${dateStr1}'
+			)
+			AND (
+				date_format(
+					b.com_dt_oper_date,
+					'%Y-%m-%d %H:%i'
+				) <= '${dateStr2}'
+			)
+			AND (
+				date_format(b.COM_DT_OPER_DATE, '%H:%i') >= '0'
+			)
+			AND (
+				date_format(b.COM_DT_OPER_DATE, '%H:%i') <= '3'
+			)
+			AND (a.ORG_CODE = b.ORG_CODE)
+			AND (b.ORG_CODE = e.ORG_CODE)
+			AND (e.COD_VCH_MEMO = c.ORG_CODE)
+			AND (e.COD_VCH_MEMO = d.ORG_CODE)
+			UNION ALL
+				SELECT
+					e.COD_VCH_MEMO AS mengd_code,
+					ifnull(a.BD_VCH_BACK_OPER_ID, '') operator,
+					a.BD_INT_FLOW_ID backNo,
+					c.DI_VCH_DISH_NAME backDish,
+					d.DU_VCH_UNIT_NAME unitName,
+					(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+						a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+					) amount
+				FROM
+					cvs_order_dish a,
+					CVS_CHECK_OUT_MASTER b,
+					dish_info c,
+					dish_unit d,
+					(
+						SELECT
+							ORG_CODE,
+							COD_CH_PAY_NO,
+							COD_VCH_MEMO
+						FROM
+							cvs_check_out_detail t
+						WHERE
+							COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+					) e
+				WHERE
+					(
+						a.bd_ch_pay_no = b.COM_CH_PAY_NO
+					)
+				AND
+		(
+			a.bd_ch_pay_no = e.COD_CH_PAY_NO
+		)	
+				AND (
+					c.DI_CH_UNIT_NO = d.DU_CH_UNIT_NO
+				)
+				AND (
+					a.BD_NUM_NUM - a.BD_NUM_BACK <> 0
+				)
+				AND (
+					a.BD_ch_dish_no = c.DI_ch_dish_no
+				)
+				AND (
+					c.DI_ch_dish_type_no LIKE '%'
+				)
+				AND (
+					date_format(
+						b.COM_DT_OPER_DATE2,
+						'%Y-%m-%d %H:%i'
+					) > '${dateStr1}'
+				)
+				AND (
+					date_format(
+						b.COM_DT_OPER_DATE2,
+						'%Y-%m-%d %H:%i'
+					) <= '${dateStr2}'
+				)
+				AND (
+					date_format(
+						b.COM_DT_OPER_DATE2,
+						'%H:%i'
+					) >= '0'
+				)
+				AND (
+					date_format(
+						b.COM_DT_OPER_DATE2,
+						'%H:%i'
+					) <= '3'
+				)
+				AND (a.ORG_CODE = b.ORG_CODE)
+				AND (b.ORG_CODE = e.ORG_CODE)
+				AND (e.COD_VCH_MEMO = c.ORG_CODE)
+				AND (e.COD_VCH_MEMO = d.ORG_CODE)
+		) cc
+	GROUP BY
+		mengd_code,
+		backDish,
+		unitName
+) TT2 ON TT1.oi_code = TT2.mengd_code]]></Query>
+</TableData>
+<TableData name="本地销售排行统计报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-02-12 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-12 14:00:31]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.itemno,
+	TT2.itemname,
+	TT2.num,
+	TT2.amount
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		a.bd_ch_dish_no AS itemno,
+		c.di_vCH_DISH_NAME AS itemname,
+		IfNull(
+			sum(a.bd_num_num - a.bd_num_back),
+			0
+		) num,
+		TRUNCATE (
+			IfNull(
+				sum(
+					CASE
+					WHEN a.ch_present_flag = 'Y' THEN
+						0
+					ELSE
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					END
+				),
+				0
+			),
+			2
+		) amount
+	FROM
+		order_dish a,
+		CHECK_OUT_MASTER b,
+		dish_info c
+	WHERE
+		(
+			a.bd_ch_dish_no = c.di_ch_dish_no
+		)
+	AND (
+		a.bd_ch_pay_no = b.com_ch_pay_no
+	)
+	AND (b.com_ch_state = 'Y')
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) > '${dateStr1}'
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) <= '${dateStr2}'
+	)
+	AND a.org_code = b.org_code
+	AND a.org_code = c.org_code
+	AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+	GROUP BY
+		a.ORG_CODE,
+		a.bd_ch_dish_no,
+		c.di_vCH_DISH_NAME
+	ORDER BY
+		num DESC
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="本地营业收银报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-02-12 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-12 14:00:31]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.typeno,
+	TT2.typeno1,
+	TT2.paymodeno,
+	TT2.count,
+	TT2.amount,
+	TT2.face,
+	TT2.diff,
+	TT2.income
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		a.COD_VCH_OPER_ID typeno,
+		a.COD_VCH_OPER_ID typeno1,
+		c.PM_VCH_PAY_MODE_NAME AS paymodeno,
+		count(a.COD_ch_pay_no) count,
+		sum(a.COD_num_real_amount) amount,
+		sum(COD_num_face) face,
+		sum(
+			CASE
+			WHEN COD_num_face <> 0 THEN
+				COD_num_face - COD_num_real_amount
+			ELSE
+				0
+			END
+		) diff,
+		sum(
+			CASE c.PM_ch_in_come_flag
+			WHEN 'Y' THEN
+				COD_num_real_amount
+			ELSE
+				0
+			END
+		) income
+	FROM
+		check_out_detail a,
+		CHECK_OUT_MASTER b,
+		pay_mode c
+	WHERE
+		(
+			a.COD_ch_pay_no = b.COM_ch_pay_no
+		)
+	AND (b.COM_ch_state = 'Y')
+	AND (
+		a.COD_ch_pay_mode_no = c.PM_ch_pay_mode_no
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) > '${dateStr1}'
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) <= '${dateStr2}'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') >= '00:00'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') <= '23:59'
+	)
+	AND (b.COM_ch_table_no LIKE '%')
+	AND a.org_code = b.org_code
+	AND a.org_code = c.org_code
+	AND c.org_code LIKE CONCAT('${orgCode1}', '%')
+	GROUP BY
+		a.ORG_CODE,
+		a.COD_VCH_OPER_ID,
+		a.COD_ch_pay_mode_no
+	ORDER BY
+		2
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="本地会员充值汇总报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-02-12 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-12 18:09:48]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.vch_memberno,
+	TT2.vch_member,
+	TT2.ch_typeno,
+	TT2.vch_typename,
+	TT2.vch_cardno,
+	TT2.c1,
+	TT2.c2,
+	TT2.c3,
+	TT2.ch_state,
+	TT2.yh,
+	TT2.ce
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+		MEMBER_DEPOSIT.ORG_CODE AS mengd_code,
+		MEMBER_INFO.MI_vch_member_no AS vch_memberno,
+		MEMBER_INFO.mi_vch_member AS vch_member,
+		ifnull(
+			(
+				SELECT
+					d.vch_typename
+				FROM
+					MEMBER_TYPE d
+				WHERE
+					d.ch_typeno = MEMBER_INFO.mi_ch_type_no
+				AND org_code = MEMBER_INFO.ORG_CODE
+			),
+			MEMBER_INFO.mi_ch_type_no
+		) AS ch_typeno,
+		MEMBER_TYPE.vch_typename AS vch_typename,
+		MEMBER_INFO.mi_vch_card_no AS vch_cardno,
+		(
+			SELECT
+				ifnull(
+					sum(
+						CASE
+						WHEN MEMBER_DEPOSIT.md_ch_deposit_mode = '4' THEN
+							0
+						ELSE
+							MEMBER_DEPOSIT.md_num_deposit
+						END
+					),
+					0
+				) AS num_deposit
+			FROM
+				MEMBER_DEPOSIT
+			WHERE
+				MEMBER_DEPOSIT.MD_vch_member_no = MEMBER_INFO.MI_vch_member_no
+			AND org_code = MEMBER_INFO.ORG_CODE
+			AND date_format(
+				MEMBER_DEPOSIT.dt_oper_date,
+				'%Y-%m-%d %H:%i:%s'
+			) BETWEEN '${dateStr1}'
+			AND '${dateStr2}'
+		) c1,
+		(
+			SELECT
+				ifnull(
+					sum(
+						MEMBER_DEPOSIT.md_num_reala_mount
+					),
+					0
+				) AS num_realamount
+			FROM
+				MEMBER_DEPOSIT
+			WHERE
+				MEMBER_DEPOSIT.MD_vch_member_no = MEMBER_INFO.MI_vch_member_no
+			AND org_code = MEMBER_INFO.ORG_CODE
+			AND date_format(
+				MEMBER_DEPOSIT.dt_oper_date,
+				'%Y-%m-%d %H:%i:%s'
+			) BETWEEN '${dateStr1}'
+			AND '${dateStr2}'
+		) c2,
+		(
+			SELECT
+				ifnull(sum(mp_num_pay), 0) AS num_pay
+			FROM
+				Member_PAY
+			WHERE
+				Member_PAY.MP_vch_member_no = MEMBER_INFO.MI_vch_member_no
+			AND org_code = MEMBER_INFO.ORG_CODE
+			AND Member_PAY.mp_dt_oper_date BETWEEN '${dateStr1}'
+			AND '${dateStr2}'
+		) c3,
+		MEMBER_INFO.mi_ch_state AS ch_state,
+		(
+			SELECT
+				sum(
+					CASE
+					WHEN ifnull(
+						CASE
+						WHEN MEMBER_DEPOSIT.md_ch_deposit_mode = '4' THEN
+							0
+						ELSE
+							MEMBER_DEPOSIT.md_num_deposit
+						END,
+						0
+					) - ifnull(
+						MEMBER_DEPOSIT.md_num_reala_mount,
+						0
+					) > 0 THEN
+						ifnull(
+							CASE
+							WHEN MEMBER_DEPOSIT.md_ch_deposit_mode = '4' THEN
+								0
+							ELSE
+								MEMBER_DEPOSIT.md_num_deposit
+							END,
+							0
+						) - ifnull(
+							MEMBER_DEPOSIT.md_num_reala_mount,
+							0
+						)
+					ELSE
+						0
+					END
+				) AS yh
+			FROM
+				MEMBER_DEPOSIT
+			WHERE
+				MEMBER_DEPOSIT.MD_vch_member_no = MEMBER_INFO.MI_vch_member_no
+			AND date_format(
+				MEMBER_DEPOSIT.dt_oper_date,
+				'%Y-%m-%d %H:%i:%s'
+			) BETWEEN '${dateStr1}'
+			AND '${dateStr2}'
+		) AS yh,
+		(
+			SELECT
+				sum(
+					- CASE
+					WHEN ifnull(
+						CASE
+						WHEN MEMBER_DEPOSIT.md_ch_deposit_mode = '4' THEN
+							0
+						ELSE
+							MEMBER_DEPOSIT.md_num_deposit
+						END,
+						0
+					) - ifnull(
+						MEMBER_DEPOSIT.md_num_reala_mount,
+						0
+					) > 0 THEN
+						0
+					ELSE
+						ifnull(
+							CASE
+							WHEN MEMBER_DEPOSIT.md_ch_deposit_mode = '4' THEN
+								0
+							ELSE
+								MEMBER_DEPOSIT.md_num_deposit
+							END,
+							0
+						) - ifnull(
+							MEMBER_DEPOSIT.md_num_reala_mount,
+							0
+						)
+					END
+				) AS ce
+			FROM
+				MEMBER_DEPOSIT
+			WHERE
+				MEMBER_DEPOSIT.MD_vch_member_no = MEMBER_INFO.MI_vch_member_no
+			AND org_code = MEMBER_INFO.ORG_CODE
+			AND date_format(
+				MEMBER_DEPOSIT.dt_oper_date,
+				'%Y-%m-%d %H:%i:%s'
+			) BETWEEN '${dateStr1}'
+			AND '${dateStr2}'
+		) AS ce
+	FROM
+		MEMBER_INFO,
+		MEMBER_TYPE,
+		MEMBER_DEPOSIT
+	WHERE
+		(
+			MEMBER_INFO.mi_ch_type_no = MEMBER_TYPE.ch_typeno
+		)
+	AND (
+		MEMBER_TYPE.ch_attribute = '2'
+	)
+	AND (
+		MEMBER_INFO.MI_vch_member_no LIKE '%'
+		OR MEMBER_INFO.mi_vch_member LIKE '%'
+	)
+	AND MEMBER_TYPE.org_code = MEMBER_INFO.org_code
+	AND MEMBER_TYPE.org_code = MEMBER_DEPOSIT.org_code
+	AND MEMBER_INFO.MI_vch_member_no = MEMBER_DEPOSIT.MD_vch_member_no
+	AND MEMBER_DEPOSIT.org_code LIKE CONCAT('${orgCode1}', '%')
+	GROUP BY
+		MEMBER_DEPOSIT.org_code,
+		MEMBER_INFO.MI_vch_member_no
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="本地菜品消费明细报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-02-12 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-12 14:10:49]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.dish_typeno,
+	TT2.dish_typeno1,
+	TT2.dishno,
+	TT2.dishname,
+	TT2.dish_unitno,
+	TT2.num,
+	TT2.amount,
+	TT2.price,
+	TT2.discount,
+	TT2.present,
+	TT2.depositRate,
+	TT2.GivingRate,
+	TT2.actualAmount
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+				a.ORG_CODE AS mengd_code,
+				c.di_ch_dish_type_no AS dish_typeno,
+				d.DT_VCH_DISH_TYPE_NAME AS dish_typeno1,
+				a.bd_ch_dish_no AS dishno,
+				c.di_vch_dish_name AS dishname,
+				e.DU_VCH_UNIT_NAME AS dish_unitno,
+				sum(a.bd_num_num - a.bd_num_back) AS num,
+				sum(
+					(a.bd_num_num - a.bd_num_back) * (
+						a.bd_num_price + a.bd_num_price_add
+					)
+				) AS amount,
+				FORMAT(
+					(
+						(
+							sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							)
+						) / sum(a.bd_num_num - a.bd_num_back)
+					),
+					2
+				) AS price,
+				Round(
+					sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * (1 - a.bd_int_discount * 0.01)
+					),
+					2
+				) AS discount,
+				Round(
+					sum(
+						CASE a.ch_present_flag
+						WHEN 'Y' THEN
+							(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								) * a.bd_int_discount * 0.01
+							)
+						ELSE
+							0.00
+						END
+					),
+					2
+				) AS present,
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * (1 - a.bd_int_discount * 0.01)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						(
+							CASE sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							)
+							WHEN 0.00 THEN
+								0.00
+							ELSE
+								ROUND(
+									(
+										ROUND(
+											sum(
+												(a.bd_num_num - a.bd_num_back) * (
+													a.bd_num_price + a.bd_num_price_add
+												)
+											),
+											2
+										) - Round(
+											sum(
+												(a.bd_num_num - a.bd_num_back) * (
+													a.bd_num_price + a.bd_num_price_add
+												) * (1 - a.bd_int_discount * 0.01)
+											),
+											2
+										)
+									) / sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										)
+									),
+									4
+								)
+							END
+						)
+					END
+				) AS depositRate,
+				(
+					CASE sum(
+						CASE a.ch_present_flag
+						WHEN 'Y' THEN
+							(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								) * a.bd_int_discount * 0.01
+							)
+						ELSE
+							0.00
+						END
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						(
+							CASE sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							)
+							WHEN 0.00 THEN
+								0.00
+							ELSE
+								ROUND(
+									(
+										ROUND(
+											sum(
+												CASE a.ch_present_flag
+												WHEN 'Y' THEN
+													(
+														(a.bd_num_num - a.bd_num_back) * (
+															a.bd_num_price + a.bd_num_price_add
+														) * a.bd_int_discount * 0.01
+													)
+												ELSE
+													0.00
+												END
+											),
+											2
+										)
+									) / sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										)
+									),
+									2
+								)
+							END
+						)
+					END
+				) AS GivingRate,
+				ROUND(
+					sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					) - sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * (1 - a.bd_int_discount * 0.01)
+					) - sum(
+						CASE a.ch_present_flag
+						WHEN 'Y' THEN
+							(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								) * a.bd_int_discount * 0.01
+							)
+						ELSE
+							0.00
+						END
+					),
+					2
+				) AS actualAmount
+			FROM
+				order_dish a,
+				CHECK_OUT_MASTER b,
+				dish_info c,
+				DISH_TYPE d,
+				dish_unit e
+			WHERE
+				(
+					a.bd_ch_pay_no = b.com_ch_pay_no
+				)
+			AND (
+				c.DI_CH_UNIT_NO = e.DU_CH_UNIT_NO
+			)
+			AND (c.ORG_CODE = e.ORG_CODE)
+			AND (b.com_ch_state = 'Y')
+			AND (
+				a.bd_ch_dish_no = c.di_ch_dish_no
+			)
+			AND (
+				a.bd_num_num - a.bd_num_back <> 0
+			)
+			AND (
+				date_format(
+					b.com_dt_oper_date,
+					'%Y-%m-%d %H:%i'
+				) > '${dateStr1}'
+			)
+			AND (
+				date_format(
+					b.com_dt_oper_date,
+					'%Y-%m-%d %H:%i'
+				) <= '${dateStr2}'
+			)
+			AND (
+				date_format(b.com_dt_oper_date, '%H:%i') >= '0'
+			)
+			AND (
+				date_format(b.com_dt_oper_date, '%H:%i') <= '3'
+			)
+			AND (
+				c.di_ch_dish_type_no LIKE '%'
+			)
+			AND c.di_ch_dish_type_no = d.DT_CH_DISH_TYPE_NO
+			AND c.org_code = d.org_code
+			AND a.org_code = b.org_code
+			AND a.org_code = c.org_code
+			AND a.org_code = e.org_code
+			AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+			GROUP BY
+				a.ORG_CODE,
+				a.bd_ch_dish_no,
+				c.di_ch_dish_type_no,
+				c.di_vch_dish_name,
+				c.di_ch_unit_no
+			ORDER BY
+				c.di_ch_dish_type_no,
+				a.bd_ch_dish_no
+		) TT2 ON TT1.oi_code = TT2.mengd_code
+		ORDER BY
+			orgCode]]></Query>
+</TableData>
+<TableData name="本地退菜情况报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-02-12 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-12 18:09:48]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.dish_typeno,
+	TT2.dish_typeno1,
+	TT2.dishno,
+	TT2.dishname,
+	TT2.dish_unitno,
+	TT2.price,
+	TT2.num,
+	TT2.amount,
+	TT2.discount,
+	TT2.present,
+	TT2.typeno
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+					orgCode AS mengd_code,
+					dish_typeno,
+					typeName dish_typeno1,
+					dishno,
+					dishname,
+					dish_unitno,
+					price,
+					sum(num) num,
+					sum(amount) amount,
+					sum(discount) discount,
+					sum(present) present,
+					typeno
+				FROM
+					(
+						(
+							SELECT
+								a.ORG_CODE AS orgCode,
+								c.DI_ch_dish_type_no dish_typeno,
+								a.BD_ch_dish_no dishno,
+								c.DI_VCH_DISH_NAME dishname,
+								d.DU_VCH_UNIT_NAME dish_unitno,
+								e.DT_VCH_DISH_TYPE_NAME typeName,
+								(
+									a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+								) price,
+								a.BD_NUM_BACK num,
+								a.BD_NUM_BACK * (
+									a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+								) amount,
+								a.BD_NUM_BACK * (
+									a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+								) * (100 - a.bd_int_discount) * 0.01 discount,
+								(
+									CASE a.ch_present_flag
+									WHEN 'Y' THEN
+										a.BD_NUM_BACK * (
+											a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+										) * a.bd_int_discount * 0.01
+									ELSE
+										0
+									END
+								) present,
+								c.DI_ch_dish_type_no typeno
+							FROM
+								order_dish a,
+								CHECK_OUT_MASTER b,
+								dish_info c,
+								dish_unit d,
+								dish_type e
+							WHERE
+								(
+									a.bd_ch_pay_no = b.COM_CH_PAY_NO
+								)
+							AND (
+								c.DI_CH_UNIT_NO = d.DU_CH_UNIT_NO
+							)
+							AND (c.ORG_CODE = d.ORG_CODE)
+							AND (a.ORG_CODE = b.ORG_CODE)
+							AND (b.ORG_CODE = c.ORG_CODE)
+							AND (
+								e.DT_CH_DISH_TYPE_NO = c.DI_CH_DISH_TYPE_NO
+							)
+							AND (e.ORG_CODE = c.ORG_CODE)
+							AND (b.com_ch_state = 'Y')
+							AND (a.BD_NUM_BACK <> 0)
+							AND (
+								a.BD_ch_dish_no = c.DI_ch_dish_no
+							)
+							AND (
+								c.DI_ch_dish_type_no LIKE '%'
+							)
+							AND (
+								date_format(
+									b.COM_DT_OPER_DATE,
+									'%Y-%m-%d %H:%i'
+								) >= '${dateStr1}'
+							)
+							AND (
+								date_format(
+									b.COM_DT_OPER_DATE,
+									'%Y-%m-%d %H:%i'
+								) <= '${dateStr2}'
+							)
+							AND (
+								date_format(b.COM_DT_OPER_DATE, '%H:%i') >= '0'
+							)
+							AND (
+								date_format(b.COM_DT_OPER_DATE, '%H:%i') <= '3'
+							)
+							AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+							ORDER BY
+								a.org_code
+						)
+						UNION ALL
+							(
+								SELECT
+									a.ORG_CODE AS orgCode,
+									c.DI_ch_dish_type_no dish_typeno,
+									a.BD_ch_dish_no dishno,
+									c.DI_VCH_DISH_NAME dishname,
+									d.DU_VCH_UNIT_NAME dish_unitno,
+									e.DT_VCH_DISH_TYPE_NAME typeName,
+									(
+										a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+									) price,
+									(a.BD_NUM_NUM - a.BD_NUM_BACK) num,
+									(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+										a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+									) amount,
+									(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+										a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+									) * (100 - a.bd_int_discount) * 0.01 discount,
+									(
+										CASE a.ch_present_flag
+										WHEN 'Y' THEN
+											(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+												a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+											) * a.bd_int_discount * 0.01
+										ELSE
+											0
+										END
+									) present,
+									c.DI_ch_dish_type_no typeno
+								FROM
+									order_dish a,
+									CHECK_OUT_MASTER b,
+									dish_info c,
+									dish_unit d,
+									dish_type e
+								WHERE
+									(
+										a.bd_ch_pay_no = b.COM_CH_PAY_NO
+									)
+								AND (
+									c.DI_CH_UNIT_NO = d.DU_CH_UNIT_NO
+								)
+								AND (c.ORG_CODE = d.ORG_CODE)
+								AND (a.ORG_CODE = b.ORG_CODE)
+								AND (b.ORG_CODE = c.ORG_CODE)
+								AND (b.com_ch_state = 'P')
+								AND (
+									e.DT_CH_DISH_TYPE_NO = c.DI_CH_DISH_TYPE_NO
+								)
+								AND (e.ORG_CODE = c.ORG_CODE)
+								AND (
+									a.BD_NUM_NUM - a.BD_NUM_BACK <> 0
+								)
+								AND (
+									a.BD_ch_dish_no = c.DI_ch_dish_no
+								)
+								AND (
+									c.DI_ch_dish_type_no LIKE '%'
+								)
+								AND (
+									date_format(
+										b.COM_DT_OPER_DATE2,
+										'%Y-%m-%d %H:%i'
+									) >= '${dateStr1}'
+								)
+								AND (
+									date_format(
+										b.COM_DT_OPER_DATE2,
+										'%Y-%m-%d %H:%i'
+									) <= '${dateStr2}'
+								)
+								AND (
+									date_format(
+										b.COM_DT_OPER_DATE2,
+										'%H:%i'
+									) >= '0'
+								)
+								AND (
+									date_format(
+										b.COM_DT_OPER_DATE2,
+										'%H:%i'
+									) <= '3'
+								)
+								AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+								ORDER BY
+									a.org_code
+							)
+						UNION ALL
+							(
+								SELECT
+									a.ORG_CODE AS orgCode,
+									c.DI_ch_dish_type_no dish_typeno,
+									a.BD_ch_dish_no dishno,
+									c.DI_VCH_DISH_NAME dishname,
+									d.DU_VCH_UNIT_NAME dish_unitno,
+									e.DT_VCH_DISH_TYPE_NAME typeName,
+									(
+										a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+									) price,
+									a.BD_NUM_NUM - a.BD_NUM_BACK num,
+									(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+										a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+									) amount,
+									(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+										a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+									) * (100 - a.bd_int_discount) * 0.01 discount,
+									(
+										CASE a.ch_present_flag
+										WHEN 'Y' THEN
+											(a.BD_NUM_NUM - a.BD_NUM_BACK) * (
+												a.BD_NUM_PRICE + a.BD_NUM_PRICE_add
+											) * a.bd_int_discount * 0.01
+										ELSE
+											0
+										END
+									) present,
+									c.DI_ch_dish_type_no typeno
+								FROM
+									order_dish a,
+									TO_GO b,
+									dish_info c,
+									dish_unit d,
+									dish_type e
+								WHERE
+									(
+										a.bd_ch_togo_no = b.ch_togono
+									)
+								AND (
+									c.DI_CH_UNIT_NO = d.DU_CH_UNIT_NO
+								)
+								AND (c.ORG_CODE = d.ORG_CODE)
+								AND (a.ORG_CODE = b.ORG_CODE)
+								AND (b.ORG_CODE = c.ORG_CODE)
+								AND (
+									e.DT_CH_DISH_TYPE_NO = c.DI_CH_DISH_TYPE_NO
+								)
+								AND (e.ORG_CODE = c.ORG_CODE)
+								AND (b.ch_state = 'P')
+								AND (
+									a.BD_NUM_NUM - a.BD_NUM_BACK <> 0
+								)
+								AND (
+									a.BD_ch_dish_no = c.DI_ch_dish_no
+								)
+								AND (
+									c.DI_ch_dish_type_no LIKE '%'
+								)
+								AND (
+									date_format(
+										b.DT_OPERDATE,
+										'%Y-%m-%d %H:%i'
+									) >= '${dateStr1}'
+								)
+								AND (
+									date_format(
+										b.DT_OPERDATE,
+										'%Y-%m-%d %H:%i'
+									) <= '${dateStr2}'
+								)
+								AND (
+									date_format(b.DT_OPERDATE, '%H:%i') >= '00:00'
+								)
+								AND (
+									date_format(b.DT_OPERDATE, '%H:%i') <= '23:59'
+								)
+								AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+								ORDER BY
+									a.org_code
+							)
+					) cc
+				GROUP BY
+					orgCode,
+					dish_typeno,
+					dishno,
+					dishname,
+					dish_unitno,
+					typeno
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="本地会员卡量统计报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.typeno,
+	TT2.totalnum,
+	TT2.normalnum,
+	TT2.rmalnum,
+	TT2.stopnum,
+	TT2.lossnum,
+	TT2.cancelnum
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+					org_code AS mengd_code,
+					ifnull(
+						(
+							SELECT
+								d.vch_typename
+							FROM
+								member_type d
+							WHERE
+								d.ch_typeno = member_info.mi_ch_type_no
+							AND org_code = member_info.ORG_CODE
+						),
+						member_info.mi_ch_type_no
+					) AS typeno,
+					count(mi_vch_member_no) AS totalnum,
+					sum(
+						CASE mi_ch_state
+						WHEN '1' THEN
+							CASE
+						WHEN mi_ch_card_flag = 'N' THEN
+							1
+						ELSE
+							0
+						END
+						ELSE
+							0
+						END
+					) AS normalnum,
+					sum(
+						CASE mi_ch_state
+						WHEN '1' THEN
+							CASE
+						WHEN mi_ch_card_flag = 'Y' THEN
+							1
+						ELSE
+							0
+						END
+						ELSE
+							0
+						END
+					) AS rmalnum,
+					sum(
+						CASE mi_ch_state
+						WHEN '2' THEN
+							1
+						ELSE
+							0
+						END
+					) AS stopnum,
+					sum(
+						CASE mi_ch_state
+						WHEN '3' THEN
+							1
+						ELSE
+							0
+						END
+					) AS lossnum,
+					sum(
+						CASE mi_ch_state
+						WHEN '4' THEN
+							1
+						ELSE
+							0
+						END
+					) AS cancelnum
+				FROM
+					member_info
+				WHERE
+					mi_ch_type_no LIKE '%'
+				AND org_code LIKE CONCAT('${orgCode1}', '%')
+				GROUP BY
+					mi_ch_type_no,
+					org_code
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="本地会员余额积分报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.vch_memberno,
+	TT2.vch_member,
+	TT2.vch_typename,
+	TT2.vch_att,
+	TT2.vch_telno,
+	TT2.num_amount,
+	TT2.num_point,
+	TT2.dt_operdate,
+	TT2.ch_state
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.org_code AS mengd_code,
+		a.mi_vch_member_no AS vch_memberno,
+		a.mi_vch_member AS vch_member,
+		b.vch_typename AS vch_typename,
+		(
+			CASE b.ch_attribute
+			WHEN '2' THEN
+				'充值卡'
+			WHEN '1' THEN
+				'优惠卡'
+			ELSE
+				''
+			END
+		) AS vch_att,
+		(
+			CASE length(ifnull(a.mi_vch_tel, '')) + length(
+				ifnull(a.mi_vch_hand_tel, '')
+			)
+			WHEN length(ifnull(a.mi_vch_tel, '')) THEN
+				a.mi_vch_tel
+			WHEN length(
+				ifnull(a.mi_vch_hand_tel, '')
+			) THEN
+				a.mi_vch_hand_tel
+			WHEN 0 THEN
+				''
+			ELSE
+				a.mi_vch_tel + ',' + a.mi_vch_hand_tel
+			END
+		) AS vch_telno,
+		ifnull(c.MCA_num_amount, 0.00) AS num_amount,
+		ifnull(c.NP_num_point, 0.00) AS num_point,
+		date_format(
+			MCA_DT_OPER_DATE,
+			'%Y-%m-%d'
+		) AS dt_operdate,
+		a.mi_ch_state AS ch_state
+	FROM
+		Member_info a,
+		Member_type b,
+		MEMBER_POINT c
+	WHERE
+		a.mi_ch_type_no = b.ch_typeno
+	AND a.mi_vch_member_no = c.MCA_VCH_MEMBER_NO
+	AND a.org_code = b.org_code
+	AND a.org_code = c.org_code
+	AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="本地菜品消费汇总报表" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-02-12 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-12 14:00:31]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020002]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.dish_typeno,
+	TT2.dish_typeno1,
+	TT2.num,
+	TT2.amount,
+	TT2.discount,
+	TT2.present,
+	TT2.depositRate,
+	TT2.GivingRate,
+	TT2.actualAmount
+FROM
+	(
+		SELECT
+			Tm1.oi_code,
+			Tm1.oi_name,
+			Tm2.oi_code AS zongb_code,
+			Tm2.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_zongb (oi_type, oi_code) AS zongb
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+				AND oi_type <> 0	
+				AND oi_type <> 1	
+				AND oi_type <> 2
+				AND oi_type <> 3
+				AND oi_type <> 8
+				AND oi_type <> 9
+			) Tm1,
+			org_info Tm2
+		WHERE
+			Tm1.zongb = tm2.oi_code
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		c.di_ch_dish_type_no AS dish_typeno,
+		d.DT_VCH_DISH_TYPE_NAME AS dish_typeno1,
+		sum(a.bd_num_num - a.bd_num_back) AS num,
+		sum(
+			(a.bd_num_num - a.bd_num_back) * (
+				a.bd_num_price + a.bd_num_price_add
+			)
+		) AS amount,
+		Round(
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			),
+			2
+		) AS discount,
+		Round(
+			sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			),
+			2
+		) AS present,
+		(
+			CASE sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			)
+			WHEN 0.00 THEN
+				0.00
+			ELSE
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						ROUND(
+							(
+								ROUND(
+									sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										)
+									),
+									2
+								) - Round(
+									sum(
+										(a.bd_num_num - a.bd_num_back) * (
+											a.bd_num_price + a.bd_num_price_add
+										) * (1 - a.bd_int_discount * 0.01)
+									),
+									2
+								)
+							) / sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							),
+							4
+						)
+					END
+				)
+			END
+		) AS depositRate,
+		(
+			CASE sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			)
+			WHEN 0.00 THEN
+				0.00
+			ELSE
+				(
+					CASE sum(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						)
+					)
+					WHEN 0.00 THEN
+						0.00
+					ELSE
+						ROUND(
+							(
+								ROUND(
+									sum(
+										CASE a.ch_present_flag
+										WHEN 'Y' THEN
+											(
+												(a.bd_num_num - a.bd_num_back) * (
+													a.bd_num_price + a.bd_num_price_add
+												) * a.bd_int_discount * 0.01
+											)
+										ELSE
+											0.00
+										END
+									),
+									2
+								)
+							) / sum(
+								(a.bd_num_num - a.bd_num_back) * (
+									a.bd_num_price + a.bd_num_price_add
+								)
+							),
+							4
+						)
+					END
+				)
+			END
+		) AS GivingRate,
+		ROUND(
+			sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				)
+			) - sum(
+				(a.bd_num_num - a.bd_num_back) * (
+					a.bd_num_price + a.bd_num_price_add
+				) * (1 - a.bd_int_discount * 0.01)
+			) - sum(
+				CASE a.ch_present_flag
+				WHEN 'Y' THEN
+					(
+						(a.bd_num_num - a.bd_num_back) * (
+							a.bd_num_price + a.bd_num_price_add
+						) * a.bd_int_discount * 0.01
+					)
+				ELSE
+					0.00
+				END
+			),
+			2
+		) AS actualAmount
+	FROM
+		order_dish a,
+		CHECK_OUT_MASTER b,
+		dish_info c,
+		DISH_TYPE d
+	WHERE
+		(
+			a.bd_ch_pay_no = b.com_ch_pay_no
+		)
+	AND a.org_code = d.org_code
+	AND c.di_ch_dish_type_no = d.DT_CH_DISH_TYPE_NO
+	AND (b.com_ch_state = 'Y')
+	AND (
+		a.bd_ch_dish_no = c.di_ch_dish_no
+	)
+	AND (
+		a.bd_num_num - a.bd_num_back <> 0
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) > '${dateStr1}'
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) <= '${dateStr2}'
+	)
+	AND (
+		c.di_ch_dish_type_no LIKE '%'
+	)
+	AND a.org_code = b.org_code
+	AND a.org_code = c.org_code
+	AND a.org_code LIKE CONCAT('${orgCode1}', '%')
+	GROUP BY
+		c.di_ch_dish_type_no,
+		a.ORG_CODE
+	ORDER BY
+		c.di_ch_dish_type_no
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="连锁门店营业汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000005000300010011]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-01-10 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-04-10 10:28:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.amount,
+	TT2.chongZhi,
+	TT2.xiaoFei,
+	TT2.weixinZf,
+	TT2.zhifubaoZf,
+	TT2.qitaZf,
+	'本地' AS flag
+FROM
+	(
+	SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.org_code AS mengd_code,
+		sum(
+			CASE c.PM_ch_in_come_flag
+			WHEN 'Y' THEN
+				COD_num_real_amount
+			ELSE
+				0
+			END
+		) AS amount,
+		e.chongZhi,
+		e.xiaoFei,
+		sum(
+			CASE a.COD_CH_PAY_MODE_NO
+			WHEN '05' THEN
+				a.COD_NUM_REAL_AMOUNT
+			ELSE
+				0
+			END
+		) AS weixinZf,
+		sum(
+			CASE a.COD_CH_PAY_MODE_NO
+			WHEN '06' THEN
+				a.COD_NUM_REAL_AMOUNT
+			ELSE
+				0
+			END
+		) AS zhifubaoZf,
+		sum(
+			CASE
+			WHEN a.COD_CH_PAY_MODE_NO != '05'
+			AND a.COD_CH_PAY_MODE_NO != '06'
+			AND a.COD_CH_PAY_MODE_NO != '02' THEN
+				a.COD_NUM_REAL_AMOUNT
+			ELSE
+				0
+			END
+		) AS qitaZf
+	FROM
+		check_out_detail a,
+		CHECK_OUT_MASTER b,
+		pay_mode c,
+		(
+			SELECT
+				t1.orgCode,
+				SUM(
+					(
+						CASE t1.rmk
+						WHEN '充值' THEN
+							t1.price
+						ELSE
+							0
+						END
+					)
+				) AS chongZhi,
+				SUM(
+					(
+						CASE t1.rmk
+						WHEN '消费' THEN
+							t1.price
+						ELSE
+							0
+						END
+					)
+				) AS xiaoFei,
+				SUM(
+					- 1 * (
+						CASE t1.rmk
+						WHEN '取现' THEN
+							t1.price
+						ELSE
+							0
+						END
+					)
+				) AS quXian,
+				SUM(
+					- 1 * (
+						CASE t1.rmk
+						WHEN '退卡' THEN
+							t1.price
+						ELSE
+							0
+						END
+					)
+				) AS tuiKa,
+				t1.price,
+				t1.rmk
+			FROM
+				(
+					SELECT
+						orgCode,
+						SUM(price) AS price,
+						rmk
+					FROM
+						(
+							SELECT
+								t1.ORG_CODE AS orgCode,
+								t1.MD_NUM_DEPOSIT AS price,
+								(
+									CASE t1.MD_CH_DEPOSIT_MODE
+									WHEN '1' THEN
+										'充值'
+									ELSE
+										t1.MD_VCH_MEMO
+									END
+								) AS rmk
+							FROM
+								member_deposit t1
+							WHERE
+								t1.ORG_CODE LIKE CONCAT('${orgCode1}', '%')
+							AND t1.DT_OPER_DATE >= '${dateStr1}'
+							AND t1.DT_OPER_DATE <= '${dateStr2}'
+							UNION ALL
+								SELECT
+									t2.ORG_CODE AS orgCode,
+									(
+										CASE t2.COD_CH_PAY_MODE_NO
+										WHEN '02' THEN
+											t2.COD_NUM_REAL_AMOUNT
+										ELSE
+											0
+										END
+									) AS price,
+									'消费' AS rmk
+								FROM
+									check_out_detail t2
+								WHERE
+									t2.ORG_CODE LIKE CONCAT('${orgCode1}', '%')
+								AND t2.COD_DT_OPER_DATE >= '${dateStr1}'
+								AND t2.COD_DT_OPER_DATE <= '${dateStr2}'
+						) T
+					GROUP BY
+						T.orgCode,
+						T.rmk
+					ORDER BY
+						orgCode
+				) T1
+			GROUP BY
+				orgCode
+		) e
+	WHERE
+		(
+			a.COD_ch_pay_no = b.COM_ch_pay_no
+		)
+	AND (
+		a.COD_ch_pay_mode_no = c.PM_ch_pay_mode_no
+	)
+	AND (b.COM_ch_state = 'Y')
+	AND (
+		a.COD_ch_pay_mode_no = c.PM_ch_pay_mode_no
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) > '${dateStr1}'
+	)
+	AND (
+		date_format(
+			b.com_dt_oper_date,
+			'%Y-%m-%d %H:%i'
+		) <= '${dateStr2}'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') >= '00:00'
+	)
+	AND (
+		date_format(b.com_dt_oper_date, '%H:%i') <= '23:59'
+	)
+	AND (a.org_code = b.org_code)
+	AND (a.org_code = c.org_code)
+	AND (a.org_code = e.orgCode)
+	AND (
+		a.org_code LIKE CONCAT('${orgCode1}', '%')
+	)
+	GROUP BY
+		a.org_code
+	ORDER BY
+		amount
+) TT2 ON TT1.oi_code = TT2.mengd_code
+UNION ALL
+	SELECT
+		TT1.zongb_name AS bumen,
+		TT1.oi_code AS orgCode,
+		TT1.oi_name AS orgName,
+		TT2.amount,
+		TT2.chongZhi,
+		TT2.xiaoFei,
+		TT2.weixinZf,
+		TT2.zhifubaoZf,
+		TT2.qitaZf,
+		'连锁' AS flag
+	FROM
+		(
+			SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+		AND t1.oi_code <> jigCode
+		) TT1
+	LEFT JOIN (
+		SELECT
+			a.COD_VCH_MEMO AS mengd_code,
+			sum(COD_num_real_amount) AS amount,
+			e.chongZhi,
+			e.xiaoFei,
+			0 AS weixinZf,
+			0 AS zhifubaoZf,
+			0 AS qitaZf
+		FROM
+			cvs_check_out_detail a,
+			cvs_CHECK_OUT_MASTER b,
+			(
+				SELECT
+					orgCode,
+					orgName,
+					zdCode,
+					SUM(
+						(
+							CASE t1.rmk
+							WHEN '充值' THEN
+								t1.price
+							ELSE
+								0
+							END
+						)
+					) AS chongZhi,
+					SUM(
+						(
+							CASE t1.rmk
+							WHEN '消费' THEN
+								t1.price
+							ELSE
+								0
+							END
+						)
+					) AS xiaoFei
+				FROM
+					(
+						SELECT
+							orgCode,
+							orgName,
+							zdCode,
+							SUM(price) AS price,
+							rmk
+						FROM
+							(
+								SELECT
+									a.OI_NAME AS orgName,
+									t1.COD_CH_PAY_NO AS orgCode,
+									t1.ORG_CODE AS zdCode,
+									t1.MD_NUM_DEPOSIT AS price,
+									(
+										CASE t1.MD_CH_DEPOSIT_MODE
+										WHEN '1' THEN
+											'充值'
+										ELSE
+											t1.MD_VCH_MEMO
+										END
+									) AS rmk
+								FROM
+									cvs_member_deposit t1,
+									org_info a
+								WHERE
+									a.OI_CODE = t1.COD_CH_PAY_NO
+								AND t1.COD_CH_PAY_NO LIKE CONCAT('${orgCode1}', '%')
+								AND t1.DT_OPER_DATE >= '${dateStr1}'
+								AND t1.DT_OPER_DATE <= '${dateStr2}'
+								UNION ALL
+									SELECT
+										b.OI_NAME AS orgName,
+										t2.COD_VCH_MEMO AS orgCode,
+										t2.ORG_CODE AS zdCode,
+										t2.COD_NUM_REAL_AMOUNT AS price,
+										'消费' AS rmk
+									FROM
+										cvs_check_out_detail t2,
+										org_info b
+									WHERE
+										b.OI_CODE = t2.COD_VCH_MEMO
+									AND t2.COD_VCH_MEMO LIKE CONCAT('${orgCode1}', '%')
+									AND t2.COD_DT_OPER_DATE >= '${dateStr1}'
+									AND t2.COD_DT_OPER_DATE <= '${dateStr2}'
+							) T
+						GROUP BY
+							T.orgCode,
+							T.rmk
+						ORDER BY
+							orgCode
+					) t1
+				GROUP BY
+					orgCode
+			) e
+		WHERE
+			(
+				a.COD_ch_pay_no = b.COM_ch_pay_no
+			)
+		AND (
+			date_format(
+				b.com_dt_oper_date,
+				'%Y-%m-%d %H:%i'
+			) > '${dateStr1}'
+		)
+		AND (
+			date_format(
+				b.com_dt_oper_date,
+				'%Y-%m-%d %H:%i'
+			) <= '${dateStr2}'
+		)
+		AND (
+			date_format(b.com_dt_oper_date, '%H:%i') >= '00:00'
+		)
+		AND (
+			date_format(b.com_dt_oper_date, '%H:%i') <= '23:59'
+		)
+		AND (a.org_code = b.org_code)
+		AND (a.org_code = e.zdCode)
+		AND (a.COD_VCH_MEMO = e.orgCode)
+		AND (
+			a.org_code LIKE CONCAT('${orgCode1}', '%')
+		)
+		GROUP BY
+			a.COD_VCH_MEMO
+		ORDER BY
+			amount
+	) TT2 ON TT1.oi_code = TT2.mengd_code]]></Query>
+</TableData>
+<TableData name="超市总部交班明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.inputDateTime,
+	TT2.employee_id,
+	TT2.pos_id,
+	TT2.billCount,
+	TT2.originalCost,
+	TT2.presentCost,
+	TT2.actuallyPaid
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		a.inputDateTime,
+		a.employee_id,
+		a.pos_id,
+		a.billCount,
+		a.originalCost,
+		a.presentCost,
+		a.actuallyPaid
+	FROM
+		sc_hand a
+	WHERE
+		inputDateTime > '${dateStr1}'
+	AND inputDateTime < '${dateStr2}'
+	ORDER BY
+		a.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部出入库明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.ioDateTime,
+	TT2.ioFlag,
+	TT2.type,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.spec,
+	TT2.unit,
+	TT2.class_no,
+	TT2.quantity,
+	TT2.price,
+	TT2.total,
+	TT2.outOfStorage,
+	TT2.termsOfIn,
+	TT2.termsOfOut,
+	TT2.businessType
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		sin.ORG_CODE AS mengd_code,
+		sin. NO,
+		sin.ioDateTime,
+		sin.ioFlag,
+		sin.type,
+		sin.barcode,
+		sin. NAME,
+		sin.spec,
+		sin.unit,
+		sin.class_no,
+		sin.quantity,
+		sin.price,
+		sin.total,
+		(
+			CASE sin.ioFlag
+			WHEN '-1' THEN
+				'出库'
+			ELSE
+				'入库'
+			END
+		) AS outOfStorage,
+		(
+			CASE sin.ioFlag
+			WHEN '-1' THEN
+				'0'
+			ELSE
+				quantity
+			END
+		) AS termsOfIn,
+		(
+			CASE sin.ioFlag
+			WHEN '1' THEN
+				'0'
+			ELSE
+				quantity
+			END
+		) AS termsOfOut,
+		(
+			CASE sin.type
+			WHEN '1' THEN
+				'初始库存'
+			WHEN '2' THEN
+				'采购进货'
+			WHEN '3' THEN
+				'采购退货'
+			WHEN '4' THEN
+				'赠送入库'
+			WHEN '5' THEN
+				'赠送出库'
+			WHEN '6' THEN
+				'其他入库'
+			WHEN '7' THEN
+				'其他出库'
+			WHEN '8' THEN
+				'库存盘盈'
+			WHEN '9' THEN
+				'库存盘亏'
+			WHEN '10' THEN
+				'销售'
+			WHEN '11' THEN
+				'退货'
+			WHEN '12' THEN
+				'兑换'
+			WHEN '13' THEN
+				'批发'
+			WHEN '14' THEN
+				'微商城订货'
+			WHEN '15' THEN
+				'未知'
+			ELSE
+				'其他'
+			END
+		) AS businessType
+	FROM
+		sc_item_inventory AS sin,
+		sc_item AS sit
+	WHERE
+		sin.item_id = sit.id
+	AND sin.ORG_CODE = sit.ORG_CODE
+	AND sin.ioDateTime > '${dateStr1}'
+	AND sin.ioDateTime < '${dateStr2}'
+	ORDER BY
+		sin.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	ioDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市税务明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-01-01 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_business. NO AS oddNumbers,
+	sc_business.reviewDateTime AS salesTime,
+	sc_business.type AS businessType,
+	sc_business_stock_item.totalTax AS totalTax,
+	sc_business_stock_item.barcode AS barcode,
+	sc_business_stock_item. NAME AS productName,
+	sc_business_stock_item.spec AS spec,
+	sc_business_stock_item.unit AS unit,
+	sc_business_stock_item.class_no AS classNo,
+	sc_business_stock_item.quantity AS quantity,
+	sc_business_stock_item.price AS price,
+	sc_business_stock_item.totalPrice AS totalPrice,
+	sc_business_stock_item.tax AS tax,
+	1 as ioFlag
+FROM
+	sc_business,
+	sc_business_stock_item
+WHERE
+	sc_business. NO = sc_business_stock_item.business_no
+AND sc_business.state = 1
+AND (
+	sc_business.type = 1
+	OR sc_business.type = 2
+	OR sc_business.type = 6
+	OR sc_business.type = 5
+)
+AND sc_business.reviewDateTime > '${dateStr1}'
+AND sc_business.reviewDateTime < '${dateStr2}'
+UNION ALL
+SELECT
+	sc_bill. NO AS oddNumbers,
+	sc_bill.inputDateTime AS salesTime,
+	sc_bill.type AS businessType,
+	sc_bill_item.salingTaxTotal AS totalTax,
+	sc_bill_item.barcode AS barcode,
+	sc_bill_item. NAME AS productName,
+	sc_bill_item.spec AS spec,
+	sc_bill_item.unit AS unit,
+	sc_bill_item.class_no AS classNo,
+	sc_bill_item.quantity AS quantity,
+	sc_bill_item.presentPrice AS price,
+	sc_bill_item.presentPriceTotal AS totalPrice,
+	sc_bill_item.salingTax AS tax,
+	sc_bill_item.ioFlag AS ioFlag
+FROM
+	sc_bill,
+	sc_bill_item
+WHERE
+	sc_bill. NO = sc_bill_item.bill_no
+AND sc_bill.state = 0
+AND (
+	sc_bill.type = 1
+	OR sc_bill.type = 2
+)
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+AND sc_bill.ORG_CODE = '${orgCode1}']]></Query>
+</TableData>
+<TableData name="超市储值明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	NO,
+	ioDateTime,
+	ioFlag,
+	type,
+	member_no,
+	amount,
+	remark,
+(case type when '1' then '销售' when '2' then '退货' when '3' then '批发'
+	when '4' then '微商城' when '5' then '充值' when '6' then '兑换' when '7' then '积分增减'
+	when '8' then '挂单' when '9' then '充值退款' else '其他' end )as saleType,
+(case ioFlag when '1' then amount else amount*-1 end) as money
+FROM
+	sc_member_deposit
+WHERE
+	ioDateTime > '${dateStr1}'
+AND ioDateTime < '${dateStr2}'
+AND sc_member_deposit.ORG_CODE = '${orgCode1}'
+]]></Query>
+</TableData>
+<TableData name="超市利润汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_bill_item.barcode,
+	sc_bill_item. NAME,
+	sc_bill_item.spec,
+	sc_bill_item.unit,
+	sum(
+		sc_bill_item.presentPriceTotal * sc_bill_item.ioFlag *- 1
+	)-(sum(
+		sc_bill_item.quantity * sc_bill_item.ioFlag *- 1
+	)*sc_item.meanStockPrice) AS grossProfit,
+	sum(
+		sc_bill_item.quantity * sc_bill_item.ioFlag *- 1
+	)as saleCount,
+	sum(
+		sc_bill_item.presentPriceTotal * sc_bill_item.ioFlag *- 1
+	)as saleMoney,
+	sc_item.meanStockPrice,
+	ROUND((sc_item.salePrice-sc_item.meanStockPrice)/sc_item.salePrice,4) AS grossMargin,
+	ROUND((sum(sc_bill_item.presentPriceTotal * sc_bill_item.ioFlag *- 1)/(sum(sc_bill_item.quantity * sc_bill_item.ioFlag *- 1))),2) AS saleCost
+FROM
+	sc_bill,
+	sc_bill_item,
+	sc_item
+WHERE
+	sc_bill.state = 0
+AND (
+	sc_bill.type = 1
+	OR sc_bill.type = 2
+)
+AND sc_bill. NO = sc_bill_item.bill_no
+AND sc_bill_item.item_id = sc_item.id
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+AND sc_bill.ORG_CODE = sc_item.ORG_CODE
+AND sc_bill.ORG_CODE = '${orgCode1}'
+GROUP BY
+	sc_bill_item.item_id]]></Query>
+</TableData>
+<TableData name="超市退货汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_bill_item.barcode,
+	sc_bill_item. NAME,
+	sc_bill_item.spec,
+	sc_bill_item.unit,
+	sum(sc_bill_item.quantity),
+	sum(
+		sc_bill_item.presentPriceTotal
+	)as returnSummary
+FROM
+	sc_bill,
+	sc_bill_item
+WHERE
+	sc_bill.state = 0
+AND sc_bill.type = 2
+AND sc_bill. NO = sc_bill_item.bill_no
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+AND sc_bill.ORG_CODE = '${orgCode1}'
+GROUP BY
+	sc_bill_item.item_id]]></Query>
+</TableData>
+<TableData name="超市收银流水" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2018-01-01 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_bill. NO,
+	sc_bill.inputDateTime,
+	sc_bill.cashier_name,
+	sc_bill.member_name,
+	sc_bill.type,
+	sc_bill_pay.type,
+	sc_bill_pay.amount,
+	sc_bill_pay.tradeNo,
+	sc_bill_pay.remark,
+  (case sc_bill.type when '1' then '销售' when '2' then '退货' when '3' then '批发'
+	when '4' then '微商城' when '5' then '充值' when '6' then '兑换' when '7' then '积分增减'
+	when '8' then '挂单' when '9' then '充值退款' else '其他' end )as saleType,
+(case sc_bill_pay.type when '1' then '收银优惠' when '2' then '优惠券' when '3' then '抹零'
+	when '4' then '银行卡付款' when '5' then '银行卡退款' when '6' then '支付宝付款' when '7' then '支付宝退款'
+	when '8' then '微信付款' when '9' then '微信退款' when '10' then '储值卡金额付款' when '11' then '储值卡金额退款' when '12' then '储值卡金额增加'
+	when '13' then '积分付款' when '14' then '积分退款' when '15' then '积分增加' when '16' then '现金付款' when '17' then '现金退款' 
+	when '18' then '找零' else '其他' end )as payType
+FROM
+	sc_bill,
+	sc_bill_pay
+WHERE
+	sc_bill.state = 0
+AND sc_bill. NO = sc_bill_pay.bill_no
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_pay.ORG_CODE
+AND sc_bill.ORG_CODE  LIKE concat('', '${orgCode1}', '%')]]></Query>
+</TableData>
+<TableData name="超市总部利润汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.spec,
+	TT2.unit,
+	TT2.grossProfit,
+	TT2.saleCount,
+	TT2.saleMoney,
+	TT2.meanStockPrice,
+	TT2.grossMargin,
+	TT2.saleCost
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		b.barcode,
+		b. NAME,
+		b.spec,
+		b.unit,
+		sum(
+			b.presentPriceTotal * b.ioFlag *- 1
+		) - (
+			sum(b.quantity * b.ioFlag *- 1) * c.meanStockPrice
+		) AS grossProfit,
+		sum(b.quantity * b.ioFlag *- 1) AS saleCount,
+		sum(
+			b.presentPriceTotal * b.ioFlag *- 1
+		) AS saleMoney,
+		c.meanStockPrice,
+		ROUND(
+			(
+				c.salePrice - c.meanStockPrice
+			) / c.salePrice,
+			4
+		) AS grossMargin,
+		ROUND(
+			(
+				sum(
+					b.presentPriceTotal * b.ioFlag *- 1
+				) / (
+					sum(b.quantity * b.ioFlag *- 1)
+				)
+			),
+			2
+		) AS saleCost
+	FROM
+		sc_bill a,
+		sc_bill_item b,
+		sc_item c
+	WHERE
+		a.state = 0
+	AND (a.type = 1 OR a.type = 2)
+	AND a. NO = b.bill_no
+	AND b.item_id = c.id
+	AND a.inputDateTime > '${dateStr1}'
+	AND a.inputDateTime < '${dateStr2}'
+	AND a.ORG_CODE = b.ORG_CODE
+	AND a.ORG_CODE = c.ORG_CODE
+	GROUP BY
+		b.item_id,
+		a.ORG_CODE
+	ORDER BY
+		a.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="超市收银汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-01-01 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_bill. NO,
+	sc_bill.inputDateTime,
+	sc_bill.cashier_name,
+	sc_bill.member_name,
+	sc_bill.type,
+	sc_bill_pay.remark,
+	sum(
+
+		IF (
+			sc_bill_pay.type = 16,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 18,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 17,
+			sc_bill_pay.amount,
+			0
+		)
+	) as cash,
+	sum(
+
+		IF (
+			sc_bill_pay.type = 2,
+			sc_bill_pay.amount,
+			0
+		)
+	)as coupon,
+	sum(
+
+		IF (
+			sc_bill_pay.type = 10,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 11,
+			sc_bill_pay.amount,
+			0
+		)
+	)as prepaidCard,
+	sum(
+
+		IF (
+			sc_bill_pay.type = 4,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 5,
+			sc_bill_pay.amount,
+			0
+		)
+	)as bankCard,
+	sum(
+
+		IF (
+			sc_bill_pay.type = 8,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 9,
+			sc_bill_pay.amount,
+			0
+		)
+	)AS weixinPay,
+	(sum(
+
+		IF (
+			sc_bill_pay.type = 2,
+			sc_bill_pay.amount,
+			0
+		)
+	)+sum(
+
+		IF (
+			sc_bill_pay.type = 10,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 11,
+			sc_bill_pay.amount,
+			0
+		)
+	)+sum(
+
+		IF (
+			sc_bill_pay.type = 4,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 5,
+			sc_bill_pay.amount,
+			0
+		)
+	)+sum(
+
+		IF (
+			sc_bill_pay.type = 8,
+			sc_bill_pay.amount,
+			0
+		)
+	) - sum(
+
+		IF (
+			sc_bill_pay.type = 9,
+			sc_bill_pay.amount,
+			0
+		)
+	))as otherPay,
+(case sc_bill.type when '1' then '销售' when '2' then '退货' when '3' then '批发'
+	when '4' then '微商城' when '5' then '充值' when '6' then '兑换' when '7' then '积分增减'
+	when '8' then '挂单' when '9' then '充值退款' else '其他' end )as saleType
+FROM
+	sc_bill,
+	sc_bill_pay
+WHERE
+	sc_bill.state = 0
+AND sc_bill. NO = sc_bill_pay.bill_no
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_pay.ORG_CODE
+AND sc_bill.ORG_CODE = '${orgCode1}'
+GROUP BY
+	sc_bill. NO]]></Query>
+</TableData>
+<TableData name="超市总部税务明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000150001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2018-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.oddNumbers,
+	TT2.salesTime,
+	TT2.businessType,
+	TT2.totalTax,
+	TT2.barcode,
+	TT2.productName,
+	TT2.spec,
+	TT2.unit,
+	TT2.classNo,
+	TT2.quantity,
+	TT2.price,
+	TT2.totalPrice,
+	TT2.tax,
+	TT2.ioFlag
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		a. NO AS oddNumbers,
+		a.reviewDateTime AS salesTime,
+		a.type AS businessType,
+		b.totalTax AS totalTax,
+		b.barcode AS barcode,
+		b. NAME AS productName,
+		b.spec AS spec,
+		b.unit AS unit,
+		b.class_no AS classNo,
+		b.quantity AS quantity,
+		b.price AS price,
+		b.totalPrice AS totalPrice,
+		b.tax AS tax,
+		1 AS ioFlag
+	FROM
+		sc_business a,
+		sc_business_stock_item b
+	WHERE
+		a. NO = b.business_no
+	AND a.state = 1
+	AND (
+		a.type = 1
+		OR a.type = 2
+		OR a.type = 6
+		OR a.type = 5
+	)
+	AND a.reviewDateTime > '${dateStr1}'
+	AND a.reviewDateTime < '${dateStr2}'
+	AND a.ORG_CODE = b.ORG_CODE
+	UNION ALL
+		SELECT
+			d.ORG_CODE AS mengd_code,
+			d. NO AS oddNumbers,
+			d.inputDateTime AS salesTime,
+			d.type AS businessType,
+			e.salingTaxTotal AS totalTax,
+			e.barcode AS barcode,
+			e. NAME AS productName,
+			e.spec AS spec,
+			e.unit AS unit,
+			e.class_no AS classNo,
+			e.quantity AS quantity,
+			e.presentPrice AS price,
+			e.presentPriceTotal AS totalPrice,
+			e.salingTax AS tax,
+			e.ioFlag AS ioFlag
+		FROM
+			sc_bill d,
+			sc_bill_item e
+		WHERE
+			d. NO = e.bill_no
+		AND d.state = 0
+		AND (d.type = 1 OR d.type = 2)
+		AND d.inputDateTime > '${dateStr1}'
+		AND d.inputDateTime < '${dateStr2}'
+		AND d.ORG_CODE = e.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	salesTime DESC]]></Query>
+</TableData>
+<TableData name="超市销售流水" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160007]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2011-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2017-01-01 00:00:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_bill. NO,
+	sc_bill.inputDateTime,
+	sc_bill_item.barcode,
+	sc_bill_item. NAME,
+	sc_bill_item.spec,
+	sc_bill_item.unit,
+	sc_bill.clerk_name,
+	sc_bill.cashier_name,
+	sc_bill.member_name,
+	sc_bill.type,
+	sc_bill_item.discountType,
+	sc_bill_item.originalPrice,
+	sc_bill_item.salingPrice,
+	sc_bill_item.quantity*ioFlag*-1 as quantityNum,
+	sc_bill_item.presentPriceTotal*ioFlag*-1 as Total,
+	sc_bill.type,
+	sc_bill.remark,
+	(case sc_bill.type when '1' then '销售' when '2' then '退货' when '3' then '批发'
+	when '4' then '微商城' when '5' then '充值' when '6' then '兑换' when '7' then '积分增减'
+	when '8' then '挂单' when '9' then '充值退款' else '其他' end )as saleType,
+(case sc_bill_item.discountType when '1' then '无折扣' when '2' then '会员价' when '3' then '会员折扣'
+	when '4' then '促销价' when '5' then '收银优惠' else '其他' end )as discountTypeDual
+FROM
+	sc_bill,
+	sc_bill_item
+WHERE
+	sc_bill.state = 0
+AND sc_bill. NO = sc_bill_item.bill_no
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+AND sc_bill.ORG_CODE = '${orgCode1}']]></Query>
+</TableData>
+<TableData name="超市销售汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000150001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-02-03 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2018-03-03 00:00:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sc_bill_item.barcode,
+	sc_bill_item. NAME,
+	sc_bill_item.spec,
+	sc_bill_item.unit,
+	sum(
+		sc_bill_item.quantity * sc_bill_item.ioFlag *- 1
+	)as saleCount,
+	sum(
+		sc_bill_item.presentPriceTotal * sc_bill_item.ioFlag *- 1
+	)as saleTotal
+FROM
+	sc_bill,
+	sc_bill_item
+WHERE
+sc_bill.state = 0
+AND sc_bill.type = 1
+AND sc_bill. NO = sc_bill_item.bill_no
+AND sc_bill.inputDateTime > '${dateStr1}'
+AND sc_bill.inputDateTime < '${dateStr2}'
+AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+AND sc_bill.ORG_CODE = '${orgCode1}'
+GROUP BY
+	sc_bill_item.item_id]]></Query>
+</TableData>
+<TableData name="超市出入库明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160005]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-2-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-01 14:37:58]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	sin.NO,
+	sin.ioDateTime,
+	sin.ioFlag,
+	sin.type,
+	sin.barcode,
+	sin.NAME,
+	sin.spec,
+	sin.unit,
+	sin.class_no,
+	sin.quantity,
+	sin.price,
+	sin.total,
+	(case sin.ioFlag when '-1' then '出库' else '入库' end )as outOfStorage,
+	(case sin.ioFlag when '-1' then '0' else quantity end )as termsOfIn,
+	(case sin.ioFlag when '1' then '0' else quantity end )as termsOfOut,
+	(case sin.type when '1' then '初始库存' when '2' then '采购进货' when  '3' then '采购退货' when '4' then '赠送入库' when '5' then '赠送出库' 
+	when '6' then '其他入库' when '7' then '其他出库' when '8' then '库存盘盈' when '9' then '库存盘亏' 
+  when '10' then '销售' when '11' then '退货' when '12' then '兑换' when '13' then '批发' when '14' then '微商城订货' when '15' then '未知'  else '其他'  end )as businessType
+FROM
+	sc_item_inventory as sin,sc_item as sit
+WHERE
+sin.item_id = sit.id
+AND sin.ORG_CODE = sit.ORG_CODE
+AND sin.ioDateTime > '${dateStr1}'
+AND sin.ioDateTime < '${dateStr2}'
+AND sin.ORG_CODE = '${orgCode1}']]></Query>
+</TableData>
+<TableData name="超市总部收银汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.inputDateTime,
+	TT2.cashier_name,
+	TT2.member_name,
+	TT2.type,
+	TT2.remark,
+	TT2.cash,
+	TT2.coupon,
+	TT2.prepaidCard,
+	TT2.bankCard,
+	TT2.weixinPay,
+	TT2.otherPay,
+	TT2.saleType,
+	TT2.memberOrgName,
+	TT2.memberAttribute
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		t1.mengd_code,
+		t1. NO,
+		t1.inputDateTime,
+		t1.cashier_name,
+		t1.member_name,
+		t1.type,
+		t1.remark,
+		t1.cash,
+		t1.coupon,
+		t1.prepaidCard,
+		t1.bankCard,
+		t1.weixinPay,
+		t1.otherPay,
+		t1.saleType,
+		(
+			CASE t1.hyType
+			WHEN NULL THEN
+				'本地会员'
+			WHEN 1 THEN
+				'本地会员'
+			WHEN 2 THEN
+				'连锁会员'
+			ELSE
+				''
+			END
+		) AS memberAttribute,
+		t2.OI_NAME AS memberOrgName
+	FROM
+		(
+			SELECT
+				a.ORG_CODE AS mengd_code,
+				a. NO,
+				a.inputDateTime,
+				a.cashier_name,
+				a.member_no,
+				(
+					CASE
+					WHEN a.member_no IS NULL THEN
+						0
+					WHEN LENGTH(a.member_no) < 1 THEN
+						0
+					ELSE
+						(
+							CASE
+							WHEN (
+								SELECT
+									SN
+								FROM
+									sc_member
+								WHERE
+									sc_member.`no` = a.member_no
+								AND sc_member.ORG_CODE = a.ORG_CODE
+							) IS NULL THEN
+								2
+							ELSE
+								1
+							END
+						)
+					END
+				) AS hyType,
+				(
+					CASE (
+						CASE
+						WHEN a.member_no IS NULL THEN
+							0
+						WHEN LENGTH(a.member_no) < 1 THEN
+							0
+						ELSE
+							(
+								CASE
+								WHEN (
+									SELECT
+										SN
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE = a.ORG_CODE
+								) IS NULL THEN
+									2
+								ELSE
+									1
+								END
+							)
+						END
+					)
+					WHEN 2 THEN
+						(
+							CASE
+							WHEN (
+								SELECT
+									ORG_CODE
+								FROM
+									sc_member
+								WHERE
+									sc_member.`no` = a.member_no
+								AND sc_member.ORG_CODE LIKE concat(
+									'',
+									substring(
+										a.ORG_CODE,
+										1,
+										(LENGTH(a.ORG_CODE) - 4)
+									),
+									'%'
+								)
+							) IS NULL THEN
+								(
+									SELECT
+										ORG_CODE
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE LIKE concat(
+										'',
+										substring(
+											a.ORG_CODE,
+											1,
+											(LENGTH(a.ORG_CODE) - 8)
+										),
+										'%'
+									)
+								)
+							ELSE
+								(
+									SELECT
+										ORG_CODE
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE LIKE concat(
+										'',
+										substring(
+											a.ORG_CODE,
+											1,
+											(LENGTH(a.ORG_CODE) - 4)
+										),
+										'%'
+									)
+								)
+							END
+						)
+					WHEN '' THEN
+						''
+					ELSE
+						a.ORG_CODE
+					END
+				) AS ssMendCode,
+				a.member_name,
+				a.type,
+				b.remark,
+				sum(IF(b.type = 16, b.amount, 0)) - sum(IF(b.type = 18, b.amount, 0)) - sum(IF(b.type = 17, b.amount, 0)) AS cash,
+				sum(IF(b.type = 2, b.amount, 0)) AS coupon,
+				sum(IF(b.type = 10, b.amount, 0)) - sum(IF(b.type = 11, b.amount, 0)) AS prepaidCard,
+				sum(IF(b.type = 4, b.amount, 0)) - sum(IF(b.type = 5, b.amount, 0)) AS bankCard,
+				sum(IF(b.type = 8, b.amount, 0)) - sum(IF(b.type = 9, b.amount, 0)) AS weixinPay,
+				(
+					sum(IF(b.type = 2, b.amount, 0)) + sum(IF(b.type = 10, b.amount, 0)) - sum(IF(b.type = 11, b.amount, 0)) + sum(IF(b.type = 4, b.amount, 0)) - sum(IF(b.type = 5, b.amount, 0)) + sum(IF(b.type = 8, b.amount, 0)) - sum(IF(b.type = 9, b.amount, 0))
+				) AS otherPay,
+				(
+					CASE a.type
+					WHEN '1' THEN
+						'销售'
+					WHEN '2' THEN
+						'退货'
+					WHEN '3' THEN
+						'批发'
+					WHEN '4' THEN
+						'微商城'
+					WHEN '5' THEN
+						'充值'
+					WHEN '6' THEN
+						'兑换'
+					WHEN '7' THEN
+						'积分增减'
+					WHEN '8' THEN
+						'挂单'
+					WHEN '9' THEN
+						'充值退款'
+					ELSE
+						'其他'
+					END
+				) AS saleType
+			FROM
+				sc_bill a,
+				sc_bill_pay b
+			WHERE
+				a.state = 0
+			AND a. NO = b.bill_no
+			AND a.inputDateTime > '${dateStr1}'
+			AND a.inputDateTime < '${dateStr2}'
+			AND a.ORG_CODE = b.ORG_CODE
+			AND a.ORG_CODE LIKE concat('', '${orgCode1}', '%')
+			GROUP BY
+				a. NO,
+				a.inputDateTime
+			ORDER BY
+				a.ORG_CODE
+		) t1
+	LEFT JOIN org_info t2 ON t1.ssMendCode = t2.OI_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	memberOrgName,
+	memberAttribute,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部储值明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.ioDateTime,
+	TT2.ioFlag,
+	TT2.type,
+	TT2.member_no,
+	TT2.amount,
+	TT2.remark,
+	TT2.saleType,
+	TT2.money,
+	TT2.memberOrgName,
+	TT2.memberAttribute
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		t1.mengd_code,
+		t1. NO,
+		t1.ioDateTime,
+		t1.ioFlag,
+		t1.type,
+		t1.member_no,
+		t1.amount,
+		t1.remark,
+		t1.saleType,
+		t1.money,
+		(
+			CASE t1.hyType
+			WHEN NULL THEN
+				'本地会员'
+			WHEN 1 THEN
+				'本地会员'
+			WHEN 2 THEN
+				'连锁会员'
+			ELSE
+				''
+			END
+		) AS memberAttribute,
+		t2.OI_NAME AS memberOrgName
+	FROM
+		(
+			SELECT
+				a.ORG_CODE AS mengd_code,
+				NO,
+				ioDateTime,
+				ioFlag,
+				type,
+				member_no,
+				(
+					CASE
+					WHEN a.member_no IS NULL THEN
+						0
+					WHEN LENGTH(a.member_no) < 1 THEN
+						0
+					ELSE
+						(
+							CASE
+							WHEN (
+								SELECT
+									SN
+								FROM
+									sc_member
+								WHERE
+									sc_member.`no` = a.member_no
+								AND sc_member.ORG_CODE = a.ORG_CODE
+							) IS NULL THEN
+								2
+							ELSE
+								1
+							END
+						)
+					END
+				) AS hyType,
+				(
+					CASE (
+						CASE
+						WHEN a.member_no IS NULL THEN
+							0
+						WHEN LENGTH(a.member_no) < 1 THEN
+							0
+						ELSE
+							(
+								CASE
+								WHEN (
+									SELECT
+										SN
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE = a.ORG_CODE
+								) IS NULL THEN
+									2
+								ELSE
+									1
+								END
+							)
+						END
+					)
+					WHEN 2 THEN
+						(
+							CASE
+							WHEN (
+								SELECT
+									ORG_CODE
+								FROM
+									sc_member
+								WHERE
+									sc_member.`no` = a.member_no
+								AND sc_member.ORG_CODE LIKE concat(
+									'',
+									substring(
+										a.ORG_CODE,
+										1,
+										(LENGTH(a.ORG_CODE) - 4)
+									),
+									'%'
+								)
+							) IS NULL THEN
+								(
+									SELECT
+										ORG_CODE
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE LIKE concat(
+										'',
+										substring(
+											a.ORG_CODE,
+											1,
+											(LENGTH(a.ORG_CODE) - 8)
+										),
+										'%'
+									)
+								)
+							ELSE
+								(
+									SELECT
+										ORG_CODE
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE LIKE concat(
+										'',
+										substring(
+											a.ORG_CODE,
+											1,
+											(LENGTH(a.ORG_CODE) - 4)
+										),
+										'%'
+									)
+								)
+							END
+						)
+					WHEN '' THEN
+						''
+					ELSE
+						a.ORG_CODE
+					END
+				) AS ssMendCode,
+				amount,
+				remark,
+				(
+					CASE type
+					WHEN '1' THEN
+						'销售'
+					WHEN '2' THEN
+						'退货'
+					WHEN '3' THEN
+						'批发'
+					WHEN '4' THEN
+						'微商城'
+					WHEN '5' THEN
+						'充值'
+					WHEN '6' THEN
+						'兑换'
+					WHEN '7' THEN
+						'积分增减'
+					WHEN '8' THEN
+						'挂单'
+					WHEN '9' THEN
+						'充值退款'
+					ELSE
+						'其他'
+					END
+				) AS saleType,
+				(
+					CASE ioFlag
+					WHEN '1' THEN
+						amount
+					ELSE
+						amount *- 1
+					END
+				) AS money
+			FROM
+				sc_member_deposit a
+			WHERE
+				ioDateTime > '${dateStr1}'
+			AND ioDateTime < '${dateStr2}'
+			AND a.ORG_CODE LIKE concat('', '${orgCode1}', '%')
+			ORDER BY
+				a.ORG_CODE
+		) t1
+	LEFT JOIN org_info t2 ON t1.ssMendCode = t2.OI_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	memberOrgName,
+	memberAttribute,
+	ioDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部收银流水" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.inputDateTime,
+	TT2.cashier_name,
+	TT2.member_name,
+	TT2.type1,
+	TT2.type2,
+	TT2.amount,
+	TT2.tradeNo,
+	TT2.remark,
+	TT2.saleType,
+	TT2.payType,
+	TT2.memberOrgName,
+	TT2.memberAttribute
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		t1.mengd_code,
+		t1. NO,
+		t1.inputDateTime,
+		t1.cashier_name,
+		t1.member_name,
+		t1.type1,
+		t1.type2,
+		t1.amount,
+		t1.tradeNo,
+		t1.remark,
+		t1.saleType,
+		t1.payType,
+		(
+			CASE t1.hyType
+			WHEN NULL THEN
+				'本地会员'
+			WHEN 1 THEN
+				'本地会员'
+			WHEN 2 THEN
+				'连锁会员'
+			ELSE
+				''
+			END
+		) AS memberAttribute,
+		t2.OI_NAME AS memberOrgName
+	FROM
+		(
+			SELECT
+				a.ORG_CODE AS mengd_code,
+				a. NO,
+				a.inputDateTime,
+				a.cashier_name,
+				a.member_name,
+				a.member_no,
+				(
+					CASE
+					WHEN a.member_no IS NULL THEN
+						0
+					WHEN LENGTH(a.member_no) < 1 THEN
+						0
+					ELSE
+						(
+							CASE
+							WHEN (
+								SELECT
+									SN
+								FROM
+									sc_member
+								WHERE
+									sc_member.`no` = a.member_no
+								AND sc_member.ORG_CODE = a.ORG_CODE
+							) IS NULL THEN
+								2
+							ELSE
+								1
+							END
+						)
+					END
+				) AS hyType,
+				(
+					CASE (
+						CASE
+						WHEN a.member_no IS NULL THEN
+							0
+						WHEN LENGTH(a.member_no) < 1 THEN
+							0
+						ELSE
+							(
+								CASE
+								WHEN (
+									SELECT
+										SN
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE = a.ORG_CODE
+								) IS NULL THEN
+									2
+								ELSE
+									1
+								END
+							)
+						END
+					)
+					WHEN 2 THEN
+						(
+							CASE
+							WHEN (
+								SELECT
+									ORG_CODE
+								FROM
+									sc_member
+								WHERE
+									sc_member.`no` = a.member_no
+								AND sc_member.ORG_CODE LIKE concat(
+									'',
+									substring(
+										a.ORG_CODE,
+										1,
+										(LENGTH(a.ORG_CODE) - 4)
+									),
+									'%'
+								)
+							) IS NULL THEN
+								(
+									SELECT
+										ORG_CODE
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE LIKE concat(
+										'',
+										substring(
+											a.ORG_CODE,
+											1,
+											(LENGTH(a.ORG_CODE) - 8)
+										),
+										'%'
+									)
+								)
+							ELSE
+								(
+									SELECT
+										ORG_CODE
+									FROM
+										sc_member
+									WHERE
+										sc_member.`no` = a.member_no
+									AND sc_member.ORG_CODE LIKE concat(
+										'',
+										substring(
+											a.ORG_CODE,
+											1,
+											(LENGTH(a.ORG_CODE) - 4)
+										),
+										'%'
+									)
+								)
+							END
+						)
+					WHEN '' THEN
+						''
+					ELSE
+						a.ORG_CODE
+					END
+				) AS ssMendCode,
+				a.type AS type1,
+				b.type AS type2,
+				b.amount,
+				b.tradeNo,
+				b.remark,
+				(
+					CASE a.type
+					WHEN '1' THEN
+						'销售'
+					WHEN '2' THEN
+						'退货'
+					WHEN '3' THEN
+						'批发'
+					WHEN '4' THEN
+						'微商城'
+					WHEN '5' THEN
+						'充值'
+					WHEN '6' THEN
+						'兑换'
+					WHEN '7' THEN
+						'积分增减'
+					WHEN '8' THEN
+						'挂单'
+					WHEN '9' THEN
+						'充值退款'
+					ELSE
+						'其他'
+					END
+				) AS saleType,
+				(
+					CASE b.type
+					WHEN '1' THEN
+						'收银优惠'
+					WHEN '2' THEN
+						'优惠券'
+					WHEN '3' THEN
+						'抹零'
+					WHEN '4' THEN
+						'银行卡付款'
+					WHEN '5' THEN
+						'银行卡退款'
+					WHEN '6' THEN
+						'支付宝付款'
+					WHEN '7' THEN
+						'支付宝退款'
+					WHEN '8' THEN
+						'微信付款'
+					WHEN '9' THEN
+						'微信退款'
+					WHEN '10' THEN
+						'储值卡金额付款'
+					WHEN '11' THEN
+						'储值卡金额退款'
+					WHEN '12' THEN
+						'储值卡金额增加'
+					WHEN '13' THEN
+						'积分付款'
+					WHEN '14' THEN
+						'积分退款'
+					WHEN '15' THEN
+						'积分增加'
+					WHEN '16' THEN
+						'现金付款'
+					WHEN '17' THEN
+						'现金退款'
+					WHEN '18' THEN
+						'找零'
+					ELSE
+						'其他'
+					END
+				) AS payType
+			FROM
+				sc_bill a,
+				sc_bill_pay b
+			WHERE
+				a.state = 0
+			AND a. NO = b.bill_no
+			AND a.inputDateTime > '${dateStr1}'
+			AND a.inputDateTime < '${dateStr2}'
+			AND a.ORG_CODE = b.ORG_CODE
+			AND a.ORG_CODE LIKE concat('', '${orgCode1}', '%')
+			ORDER BY
+				a.ORG_CODE
+		) t1
+	LEFT JOIN org_info t2 ON t1.ssMendCode = t2.OI_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	memberOrgName,
+	memberAttribute,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部营业明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.type,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.quantity,
+	TT2.presentPriceTotal,
+	TT2.clerkBonusAmount,
+	TT2.clerk_name,
+	TT2.cashier_name,
+	TT2.spec,
+	TT2.unit,
+	TT2.inputDateTime,
+	TT2.remark
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		sc_bill.ORG_CODE AS mengd_code,
+		sc_bill. NO,
+		sc_bill.type,
+		sc_bill_item.barcode,
+		sc_bill_item. NAME,
+		sc_bill_item.quantity,
+		sc_bill_item.presentPriceTotal,
+		sc_bill_item.clerkBonusAmount,
+		sc_bill_item.clerk_name,
+		sc_bill.cashier_name,
+		sc_bill_item.spec,
+		sc_bill_item.unit,
+		sc_bill.inputDateTime,
+		sc_bill_item.remark
+	FROM
+		sc_bill,
+		sc_bill_item
+	WHERE
+		sc_bill.state = 0
+	AND sc_bill. NO = sc_bill_item.bill_no
+	AND sc_bill_item.clerk_id <> -1
+	AND sc_bill.inputDateTime > '${dateStr1}'
+	AND sc_bill.inputDateTime < '${dateStr2}'
+	AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+	AND sc_bill.ORG_CODE LIKE CONCAT('', '${orgCode1}', '%')
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市交班明细" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[000000020002000200160001]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-12-30 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-01-01 00:00:00]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	inputDateTime,
+	employee_id,
+	pos_id,
+	billCount,
+	originalCost,
+	presentCost,
+	actuallyPaid
+FROM
+	sc_hand
+WHERE
+	inputDateTime > '${dateStr1}'
+AND inputDateTime < '${dateStr2}'
+AND sc_hand.ORG_CODE = '${orgCode1}']]></Query>
+</TableData>
+<TableData name="超市总部联营明细" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.type,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.quantity,
+	TT2.presentPriceTotal,
+	TT2.jointRate,
+	TT2.jointAmount,
+	TT2.cashier_name,
+	TT2.spec,
+	TT2.unit,
+	TT2.inputDateTime,
+	TT2.remark
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		sc_bill.ORG_CODE AS mengd_code,
+		sc_bill. NO,
+		sc_bill.type,
+		sc_bill_item.barcode,
+		sc_bill_item. NAME,
+		sc_bill_item.quantity,
+		sc_bill_item.presentPriceTotal,
+		sc_bill_item.jointRate,
+		sc_bill_item.jointAmount,
+		sc_bill.cashier_name,
+		sc_bill_item.spec,
+		sc_bill_item.unit,
+		sc_bill.inputDateTime,
+		sc_bill_item.remark
+	FROM
+		sc_bill,
+		sc_bill_item
+	WHERE
+		sc_bill.state = 0
+	AND sc_bill. NO = sc_bill_item.bill_no
+	AND sc_bill_item.jointRate > 0.0001
+	AND sc_bill.inputDateTime > '${dateStr1}'
+	AND sc_bill.inputDateTime < '${dateStr2}'
+	AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+	AND sc_bill.ORG_CODE LIKE CONCAT('', '${orgCode1}', '%')
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部赠送流水" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.inputDateTime,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.spec,
+	TT2.unit,
+	TT2.quantity,
+	TT2.cashier_name,
+	TT2.member_name,
+	TT2.type,
+	TT2.remark,
+	TT2.salingPrice
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		sc_bill.ORG_CODE AS mengd_code,
+		sc_bill. NO,
+		sc_bill.inputDateTime,
+		sc_bill_item.barcode,
+		sc_bill_item. NAME,
+		sc_bill_item.spec,
+		sc_bill_item.unit,
+		sc_bill_item.quantity,
+		sc_bill.cashier_name,
+		sc_bill.member_name,
+		sc_bill.type,
+		sc_bill.remark,
+		sc_bill_item.salingPrice
+	FROM
+		sc_bill,
+		sc_bill_item
+	WHERE
+		sc_bill.state = 0
+	AND sc_bill. NO = sc_bill_item.bill_no
+	AND sc_bill_item.ioFlag = - 1
+	AND sc_bill_item.presentPriceTotal < 0.0001
+	AND sc_bill.inputDateTime > '${dateStr1}'
+	AND sc_bill.inputDateTime < '${dateStr2}'
+	AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+	AND sc_bill.ORG_CODE LIKE CONCAT('', '${orgCode1}', '%')
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部退货汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.spec,
+	TT2.unit,
+	TT2.quantity,
+	TT2.returnSummary
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		b.barcode,
+		b. NAME,
+		b.spec,
+		b.unit,
+		sum(b.quantity) AS quantity,
+		sum(b.presentPriceTotal) AS returnSummary
+	FROM
+		sc_bill a,
+		sc_bill_item b
+	WHERE
+		a.state = 0
+	AND a.type = 2
+	AND a. NO = b.bill_no
+	AND a.inputDateTime > '${dateStr1}'
+	AND a.inputDateTime < '${dateStr2}'
+	AND a.ORG_CODE = b.ORG_CODE
+	GROUP BY
+		b.item_id,
+		a.ORG_CODE
+	ORDER BY
+		a.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="超市总部销售流水" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2. NO,
+	TT2.inputDateTime,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.spec,
+	TT2.unit,
+	TT2.clerk_name,
+	TT2.cashier_name,
+	TT2.member_name,
+	TT2.discountType,
+	TT2.originalPrice,
+	TT2.salingPrice,
+	TT2.quantityNum,
+	TT2.Total,
+	TT2.type,
+	TT2.remark,
+	TT2.saleType,
+	TT2.discountTypeDual
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		a. NO,
+		a.inputDateTime,
+		b.barcode,
+		b. NAME,
+		b.spec,
+		b.unit,
+		a.clerk_name,
+		a.cashier_name,
+		a.member_name,
+		b.discountType,
+		b.originalPrice,
+		b.salingPrice,
+		b.quantity * ioFlag *- 1 AS quantityNum,
+		b.presentPriceTotal * ioFlag *- 1 AS Total,
+		a.type,
+		a.remark,
+		(
+			CASE a.type
+			WHEN '1' THEN
+				'销售'
+			WHEN '2' THEN
+				'退货'
+			WHEN '3' THEN
+				'批发'
+			WHEN '4' THEN
+				'微商城'
+			WHEN '5' THEN
+				'充值'
+			WHEN '6' THEN
+				'兑换'
+			WHEN '7' THEN
+				'积分增减'
+			WHEN '8' THEN
+				'挂单'
+			WHEN '9' THEN
+				'充值退款'
+			ELSE
+				'其他'
+			END
+		) AS saleType,
+		(
+			CASE b.discountType
+			WHEN '1' THEN
+				'无折扣'
+			WHEN '2' THEN
+				'会员价'
+			WHEN '3' THEN
+				'会员折扣'
+			WHEN '4' THEN
+				'促销价'
+			WHEN '5' THEN
+				'收银优惠'
+			ELSE
+				'其他'
+			END
+		) AS discountTypeDual
+	FROM
+		sc_bill a,
+		sc_bill_item b
+	WHERE
+		a.state = 0
+	AND a. NO = b.bill_no
+	AND a.inputDateTime > '${dateStr1}'
+	AND a.inputDateTime < '${dateStr2}'
+	AND a.ORG_CODE = b.ORG_CODE
+	ORDER BY
+		a.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode,
+	inputDateTime DESC]]></Query>
+</TableData>
+<TableData name="超市总部销售汇总" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="orgCode1"/>
+<O>
+<![CDATA[00000002000200020016]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2015-03-22 00:00:00]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-03-30 16:08:42]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.barcode,
+	TT2. NAME,
+	TT2.spec,
+	TT2.unit,
+	TT2.saleCount,
+	TT2.saleTotal
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		a.ORG_CODE AS mengd_code,
+		b.barcode,
+		b. NAME,
+		b.spec,
+		b.unit,
+		sum(b.quantity * b.ioFlag *- 1) AS saleCount,
+		sum(
+			b.presentPriceTotal * b.ioFlag *- 1
+		) AS saleTotal
+	FROM
+		sc_bill a,
+		sc_bill_item b
+	WHERE
+		a.state = 0
+	AND a.type = 1
+	AND a. NO = b.bill_no
+	AND a.inputDateTime > '${dateStr1}'
+	AND a.inputDateTime < '${dateStr2}'
+	AND a.ORG_CODE = b.ORG_CODE
+	GROUP BY
+		b.item_id,
+		a.ORG_CODE
+	ORDER BY
+		a.ORG_CODE
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="超市总部营业汇总" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[Yqs]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT
+	TT1.zongb_name AS bumen,
+	TT1.oi_code AS orgCode,
+	TT1.oi_name AS orgName,
+	TT2.clerk_id,
+	TT2.clerk_name,
+	TT2.quantity,
+	TT2.presentPriceTotal,
+	TT2.clerkBonusAmount
+FROM
+	(
+		SELECT
+			t1.oi_code,
+			t1.oi_name,
+			t2.oi_code AS jingxsCode,
+			t2.oi_name AS jingxsName,
+			t3.oi_code AS zongb_code,
+			t3.oi_name AS zongb_name
+		FROM
+			(
+				SELECT
+					oi_code,
+					oi_name,
+					oi_type,
+					get_jingxs (oi_code) AS jingxsCode,
+					get_jig (oi_code) AS jigCode
+				FROM
+					org_info
+				WHERE
+					oi_code LIKE concat('', '${orgCode1}', '%')
+			) t1
+		LEFT JOIN org_info t2 ON t1.jingxsCode = t2.oi_code
+		LEFT JOIN org_info t3 ON t1.jigCode = t3.oi_code
+		WHERE
+			t1.oi_code <> jingxsCode
+	) TT1
+LEFT JOIN (
+	SELECT
+		sc_bill.ORG_CODE AS mengd_code,
+		sc_bill_item.clerk_id,
+		sc_bill_item.clerk_name,
+		sum(
+			sc_bill_item.quantity * sc_bill_item.ioFlag *- 1
+		) AS quantity,
+		sum(
+			sc_bill_item.presentPriceTotal * sc_bill_item.ioFlag *- 1
+		) AS presentPriceTotal,
+		sum(
+			sc_bill_item.clerkBonusAmount * sc_bill_item.ioFlag *- 1
+		) AS clerkBonusAmount
+	FROM
+		sc_bill,
+		sc_bill_item
+	WHERE
+		sc_bill.state = 0
+	AND sc_bill_item.clerk_id <> -1
+	AND sc_bill. NO = sc_bill_item.bill_no
+	AND sc_bill.inputDateTime > '${dateStr1}'
+	AND sc_bill.inputDateTime < '${dateStr2}'
+	AND sc_bill.ORG_CODE = sc_bill_item.ORG_CODE
+	AND sc_bill.ORG_CODE LIKE CONCAT('', '${orgCode1}', '%')
+	GROUP BY
+		sc_bill.ORG_CODE,
+		sc_bill_item.clerk_id
+) TT2 ON TT1.oi_code = TT2.mengd_code
+ORDER BY
+	orgCode]]></Query>
+</TableData>
+<TableData name="员工信息表" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[FRDemo]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT * FROM 员工信息表]]></Query>
+</TableData>
+<TableData name="staff" class="com.fr.data.impl.EmbeddedTableData">
+<Parameters/>
+<DSName>
+<![CDATA[]]></DSName>
+<ColumnNames>
+<![CDATA[name,,.,,password,,.,,fullname,,.,,department,,.,,position,,.,,email]]></ColumnNames>
+<ColumnTypes>
+<![CDATA[java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.String]]></ColumnTypes>
+<RowData>
+<![CDATA[NKR(5_CuhHceX@ZJr43gM]Aq\nnM\Eu%AP_K42>P72$?YOP7\=o#Y($lBHiQI$t"a4ls!$4Y!
+A)e9DcGOTBE\]A=Yg>_+LSYlOkp5/BeAeS-kAkn,>VV)GKKLq)#(]At(bH_=<NWKJ%$>Gn-^K1
+LOu99gdDH)UCKZ5V,)LPsa[ZL>DgqjE-Id,LL,R52W7$^k,;rg/lkm<NQP'Ae9(J\GT*mC:&
+l=.V^sSV"`^,,jO-AE\$#Y#4Bb(tIG$<&o0#0gbhqTN8D.q4.E?joZ%GUAr.r8SOIT=PU#RP
+M+aGPifFZB.?[F^g-V\cI'*7nY^1]Anf0WFQkBcf<q(GFG>T#Eqmr=79k7LN_nUaCbUnl8$$u
+24F,+3laI-I*l,+1gSk$9Si7"<J638/oc*V\#BDt\`Cut8qY4ZYi"EM=MsV<k<!b,SAf0sbG
+)-0`o5&UarB=n9j]A.Fi2gCF?N~
+]]></RowData>
+</TableData>
+<TableData name="区域查询测试" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[CateSystem]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[
+select * from area_info]]></Query>
+</TableData>
+<TableData name="用户信息表" class="com.fr.data.impl.DBTableData">
+<Parameters/>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[FRDemo]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[SELECT * FROM [userinfo]A]]></Query>
+</TableData>
+<TableData name="注册" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-07-21 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-07-30 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="userId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[sdk]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[ 
+
+select   t.  name as appname , count(1) as actives ,t.DATE1
+
+from 
+(
+select 
+t2.ui_name ,t3.NAME , t1.APP_USER_ID, t1.APP_USER_NAME,t1.APP_USER_PHONE, t1.DATE,date_format(t1.DATE,'%y-%m-%d') DATE1
+
+from 
+dev_app_run t1,
+dev_user_info t2,
+dev_apps t3
+where t1.USERID = t2.UI_ID 
+and t1.APPID = t3.APPID
+and t1.DATE > '${dateStr1}'
+and t1.DATE < '${dateStr2}'
+and t1.USERID LIKE CONCAT('', '${userId}', '%')
+and t1.STATE = 2
+) t
+group by t.DATE1
+]]></Query>
+</TableData>
+<TableData name="安装" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-07-21 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-08-21 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="userId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[sdk]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[ 
+
+select   t.  name as appname , count(1) as actives ,t.DATE1
+
+from 
+(
+select 
+t2.ui_name ,t3.NAME , t1.APP_USER_ID, t1.APP_USER_NAME,t1.APP_USER_PHONE, t1.DATE,date_format(t1.DATE,'%y-%m-%d') DATE1
+
+from 
+dev_app_run t1,
+dev_user_info t2,
+dev_apps t3
+where t1.USERID = t2.UI_ID 
+and t1.APPID = t3.APPID
+and t1.DATE > '${dateStr1}'
+and t1.DATE < '${dateStr2}'
+and t1.USERID LIKE CONCAT('', '${userId}', '%')
+and t1.STATE = 1
+) t
+group by t.DATE1
+]]></Query>
+</TableData>
+<TableData name="活动" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-07-21 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-07-31 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="userId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[sdk]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  t. ui_name , t.  name as appname , count(1) as actives ,t.zcsj
+
+from 
+(
+select 
+t2.ui_name ,t3.NAME , t1.APP_USER_ID, t1.APP_USER_NAME,t1.APP_USER_PHONE, t1.DATE , t3.DATE as zcsj
+
+from 
+dev_app_run t1,
+dev_user_info t2,
+dev_apps t3
+where t1.USERID = t2.UI_ID 
+and t1.APPID = t3.APPID
+and t1.DATE > '${dateStr1}'
+and t1.DATE < '${dateStr2}'
+and t1.USERID LIKE CONCAT('', '${userId}', '%')
+) t
+group by t. ui_name ,t.  name 
+
+]]></Query>
+</TableData>
+<TableData name="留存" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="userId"/>
+<O>
+<![CDATA[]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[sdk]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[
+call  test('${dateStr1}', '${dateStr2}' ,'${userId}' )
+]]></Query>
+</TableData>
+<TableData name="现金流水" class="com.fr.data.impl.DBTableData">
+<Parameters>
+<Parameter>
+<Attributes name="dateStr1"/>
+<O>
+<![CDATA[2016-07-21 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="dateStr2"/>
+<O>
+<![CDATA[2016-08-21 11:18:15]]></O>
+</Parameter>
+<Parameter>
+<Attributes name="userId"/>
+<O>
+<![CDATA[133]]></O>
+</Parameter>
+</Parameters>
+<Attributes maxMemRowCount="-1"/>
+<Connection class="com.fr.data.impl.NameDatabaseConnection">
+<DatabaseName>
+<![CDATA[sdk]]></DatabaseName>
+</Connection>
+<Query>
+<![CDATA[select  t. ui_name , t.  name as appname ,   t.PRODUCT_NAME, t.PRODUCT_COST,     t.DATE
+
+from 
+(
+select 
+t2.ui_name ,t3.NAME , t1.APP_USER_ID, t1.APP_USER_NAME,t1.APP_USER_PHONE,  t1.PRODUCT_NAME, t1.PRODUCT_COST,    t1.DATE , t3.DATE as zcsj
+
+from 
+dev_app_cost t1,
+dev_user_info t2,
+dev_apps t3
+where t1.USERID = t2.UI_ID 
+and t1.APPID = t3.APPID
+and t1.DATE > '${dateStr1}'
+and t1.DATE < '${dateStr2}'
+and t1.USERID LIKE CONCAT('', '${userId}', '%')
+) t
+group by t. ui_name ,t.  name , t.PRODUCT_NAME 
+
+]]></Query>
+</TableData>
+</TableDataMap>
+</DatasourceManager>

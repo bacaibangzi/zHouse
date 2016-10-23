@@ -1,0 +1,4 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Internet Explorer\ActiveX Compatibility\{1663ed61-23eb-11d2-b92f-008048fdd814}]
+"Compatibility Flags"=dword:00000000 
