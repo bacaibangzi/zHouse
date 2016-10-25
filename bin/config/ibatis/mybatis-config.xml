@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+		<!-- 
+	<plugins>
+		指定数据库分页方言Dialect, 其它方言:OracleDialect,SQLServerDialect,SybaseDialect,DB2Dialect,
+		PostgreSQLDialect,MySQLDialect,DerbyDialect,HSQLDialect
+		<plugin interceptor="com.sg.authority.common.mybatis.OffsetLimitInterceptor">
+			<property name="dialectClass" value="com.sg.authority.common.mybatis.dialect.OracleDialect"/>
+		</plugin>
+	</plugins>
+		-->
+		<mappers>
+			<!-- 系统信息 -->
+			<mapper resource="sqlmap/common_SqlMap.xml" />
+			<mapper resource="sqlmap/system/UserInfoSqlMap.xml" />
+			<mapper resource="sqlmap/system/UserRoleMenuSqlMap.xml" />
+			<mapper resource="sqlmap/system/AreaInfoSqlMap.xml" />
+			<mapper resource="sqlmap/system/OrgInfoSqlMap.xml" />
+			<mapper resource="sqlmap/system/SystemMenuSqlMap.xml" />
+			<mapper resource="sqlmap/system/RoleInfoSqlMap.xml" />
+			<mapper resource="sqlmap/system/RoleMenuSqlMap.xml" />
+			<mapper resource="sqlmap/system/UserRoleSqlMap.xml" />
+			<mapper resource="sqlmap/system/SmsLogSqlMap.xml" />
+			<mapper resource="sqlmap/system/TradeLogSqlMap.xml" />
+			
+			<mapper resource="sqlmap/developer/AppsSqlMap.xml" />
+			<mapper resource="sqlmap/developer/AppRunSqlMap.xml" />
+			<mapper resource="sqlmap/developer/AppCostSqlMap.xml" />
+			
+			<mapper resource="sqlmap/zhouse/HouseInfoSqlMap.xml" />
+			<mapper resource="sqlmap/zhouse/NewsSqlMap.xml" />
+			<mapper resource="sqlmap/zhouse/UserHouseSqlMap.xml" />
+			<mapper resource="sqlmap/zhouse/VhuserHouseSqlMap.xml" />
+			<mapper resource="sqlmap/zhouse/HouseTypeSqlMap.xml" />
+			
+			<mapper resource="sqlmap/system/WebLocationSqlMap.xml" />
+			
+		</mappers>
+</configuration>

@@ -1,5 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
@@ -58,6 +60,16 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 					</li>
 					<li  class="filter-item">
 						<label class="filter-label">
+							租房类型
+						</label>
+						<select name="fangShi_filter"  class="filter-select"  id="fangShi_filter"  >
+							<c:forEach items="${fangShiMap}" var="item">
+								 <option value="${item.key}">${item.value}</option>
+							</c:forEach>
+						</select>
+					</li>
+					<li  class="filter-item">
+						<label class="filter-label">
 							审核状态
 						</label>
 						<select name="sh_filter"  class="filter-select"  id="sh_filter"  >
@@ -101,7 +113,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
             <!--存储当前点击行的数据-->
             <input type="hidden" class="Js_curIndex" value="" />
             <ul>
-                <li><a hideFocus="true" href="javascript:update()">修改</a></li>
+                <li><a hideFocus="true" href="javascript:update()">查看</a></li>
                <!--  <li><a hideFocus="true" href="javascript:detail()">查看</a></li>--> 
             </ul>
         </div> 
@@ -167,11 +179,26 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 		function highQuery()
 		{
 			// 查询条件 区域名称
-			var areaName_filter = '';
 			var returnVal = '<%=basePath%>houseInfo/list.htm?orgCode=${sessionScope.accountInfo.orgCode}';
+			
+			var areaName_filter = '';
+			var areaName_filter = $.trim(document.getElementById('areaName_filter').value);
 			if(areaName_filter!=''){
 				returnVal += '&nameFilter=' + encodeURI(encodeURI(areaName_filter));
 			}
+
+			var sh_filter = $.trim(document.getElementById('sh_filter').value);
+			if(sh_filter!='-1')
+			{
+				returnVal += '&shFilter=' + sh_filter;
+			}
+
+			var fangShi_filter = '';
+			var fangShi_filter = $.trim(document.getElementById('fangShi_filter').value);
+			if(fangShi_filter!=''){
+				returnVal += '&flag=' + encodeURI(encodeURI(fangShi_filter));
+			}
+			
 			return returnVal;
 		}
 		/** 删除**/

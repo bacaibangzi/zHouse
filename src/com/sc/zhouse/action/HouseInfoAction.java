@@ -2,6 +2,7 @@ package com.sc.zhouse.action;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,8 +23,6 @@ import com.sc.framework.security.util.AccountInfo;
 import com.sc.framework.vo.ConditionVO;
 import com.sc.framework.vo.Page;
 import com.sc.system.pojo.AreaInfo;
-import com.sc.system.pojo.OrgInfo;
-import com.sc.system.service.OrgInfoService;
 import com.sc.system.service.SystemAreaService;
 import com.sc.zhouse.pojo.HouseInfo;
 import com.sc.zhouse.service.HouseInfoService;
@@ -42,7 +41,21 @@ public class HouseInfoAction extends BaseAction{
 	 * @return
 	 */
 	@RequestMapping(value = "/main.htm", method = RequestMethod.GET)
-	public String toMain() {
+	public String toMain(HttpServletRequest request) {
+		LinkedHashMap<String,String> user_sh = new LinkedHashMap<String,String>();
+		user_sh.put("", "全部");
+		user_sh.put("0", "未审核");
+		user_sh.put("1", "通过");
+		request.setAttribute("shMap", user_sh);
+		
+		LinkedHashMap<String,String> fangShiMap = new LinkedHashMap<String,String>();
+		fangShiMap.put("", "全部");
+		fangShiMap.put("酒店", "酒店");
+		fangShiMap.put("酒店公寓", "酒店公寓");
+		fangShiMap.put("短期租房", "短期租房");
+		fangShiMap.put("长期租房", "长期租房");
+		request.setAttribute("fangShiMap", fangShiMap);
+		
 		return "zhouse/houseInfoMain";
 	}
 

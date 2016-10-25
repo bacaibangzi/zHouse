@@ -198,7 +198,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				<tfoot>
 					<tr>
 						<td colspan="4">
-							<input type="button" class="form-btn" value="保存" onclick="submitCheck()" id="saveNotesSub" />
+							<!--  <input type="button" class="form-btn" value="保存" onclick="submitCheck()" id="saveNotesSub" />-->
 							<input type="button" class="form-btn" value="返回" onclick="returnUrl();" />
 						</td>
 					</tr>

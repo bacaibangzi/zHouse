@@ -1,5 +1,8 @@
 package com.sc.zhouse.action;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,7 +33,11 @@ public class NewsAction extends BaseAction{
 	 * @return
 	 */
 	@RequestMapping(value = "/main.htm", method = RequestMethod.GET)
-	public String toMain() {
+	public String toMain(HttpServletRequest request) {
+		Map<Long,String> user_sh = new HashMap<Long,String>();
+		user_sh.put(0l, "未审核");
+		user_sh.put(1l, "通过");
+		request.setAttribute("shMap", user_sh);
 		return "zhouse/newsMain";
 	}
 

@@ -385,6 +385,11 @@ public class HouseInfoService extends BaseService<HouseInfo>{
 			Page<HouseInfo> page)  throws Exception{
 		Map<String, Object> conditionMap = new HashMap<String, Object>();
 		conditionMap.put("userId", vo.getEntityId());
+		conditionMap.put("shenHe", vo.getShFilter());
+		if(vo.getNameFilter()!=null)
+		conditionMap.put("biaoTi", java.net.URLDecoder.decode(vo.getNameFilter(),"UTF-8"));
+		if(vo.getFlag()!=null)
+		conditionMap.put("fangShi", java.net.URLDecoder.decode(vo.getFlag(),"UTF-8"));
 		return super.queryForPage(houseInfoMapper, conditionMap, page);
 	}
 	
@@ -400,7 +405,7 @@ public class HouseInfoService extends BaseService<HouseInfo>{
 		Map<String, Object> conditionMap = new HashMap<String, Object>();
 		conditionMap.put("state", vo.getValue());
 		conditionMap.put("name", vo.getNameFilter());
-		return super.queryForPage(houseInfoMapper, conditionMap, page);
+		return super.queryForPage(houseInfoMapper, conditionMap, page); 
 	}
 	
 	/**

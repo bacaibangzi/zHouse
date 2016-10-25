@@ -244,10 +244,11 @@
 		            AND sn = #{sn}
 		       </if>
 		       <if test="biaoTi !=null">
-		            AND biao_ti = #{biaoTi}
+		            AND biao_ti  like concat('%', #{biaoTi}, '%')
 		       </if>
 		       <if test="fangShi !=null">
-		            AND fang_shi = #{fangShi}
+		            AND fang_shi like concat('%', #{fangShi} , '%')
+		            
 		       </if>
 		       <if test="jianZhuMianJi !=null">
 		            AND jian_zhu_mian_ji = #{jianZhuMianJi}
@@ -307,7 +308,7 @@
 		            AND fa_bu_shi_jian &lt;= #faBuShiJianEnd#
 		       </if>
 		       <if test="shenHe !=null">
-		            AND shen_he = #{shenHe}
+		            AND shen_he like concat('%', #{shenHe} , '%')
 		       </if>
 		       <if test="shen !=null">
 		            AND shen = #{shen}
