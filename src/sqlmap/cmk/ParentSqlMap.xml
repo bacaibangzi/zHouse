@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="com.sc.cmk.dao.ParentDao" >
+
+    <resultMap id="RM.Parent" type="com.sc.cmk.pojo.Parent">
+        <result property="id" column="id"/>
+        <result property="password" column="password"/>
+        <result property="mail" column="mail"/>
+        <result property="phone" column="phone"/>
+        <result property="question1" column="question1"/>
+        <result property="answer1" column="answer1"/>
+        <result property="question2" column="question2"/>
+        <result property="answer2" column="answer2"/>
+        <result property="question3" column="question3"/>
+        <result property="answer3" column="answer3"/>
+        <result property="question4" column="question4"/>
+        <result property="answer4" column="answer4"/>
+        <result property="date" column="date"/>
+        <result property="name" column="name"/>
+    </resultMap>
+
+	<sql id="Parent.columns">
+	    <![CDATA[
+        id ,password ,mail ,phone ,question1 ,answer1 ,question2 ,answer2 ,question3 ,answer3 ,question4 ,answer4 ,date,name
+	    ]]>
+	</sql>
+	
+    <insert id="insert" >
+    <![CDATA[
+        INSERT INTO parent (
+        	id ,
+        	password ,
+        	mail ,
+        	phone ,
+        	question1 ,
+        	answer1 ,
+        	question2 ,
+        	answer2 ,
+        	question3 ,
+        	answer3 ,
+        	question4 ,
+        	answer4 ,
+        	date,name
+        ) VALUES (
+			nextVal('parent') ,
+			#{password} ,
+			#{mail} ,
+			#{phone} ,
+			#{question1} ,
+			#{answer1} ,
+			#{question2} ,
+			#{answer2} ,
+			#{question3} ,
+			#{answer3} ,
+			#{question4} ,
+			#{answer4}  ,
+			#{date}  ,
+			#{name} 
+        )
+    ]]>
+    <!--
+    mysql:		type="post" SELECT  select last_insert_id()
+    sqlserver:	type="post" SELECT  @@identity  AS  ID
+    oracle:		type="pre" 	SELECT  sequenceName.nextval AS ID FROM DUAL
+    DB2:		type="pre"	values nextval for sequenceName
+        <selectKey resultClass="java.lang.Long" type="post" keyProperty="id" >
+            select last_insert_id()
+        </selectKey>
+    -->
+    </insert>
+
+    <update id="update" >
+    <![CDATA[
+        UPDATE parent SET
+	        password = #{password} ,
+	        mail = #{mail} ,
+	        phone = #{phone} ,
+	        question1 = #{question1} ,
+	        answer1 = #{answer1} ,
+	        question2 = #{question2} ,
+	        answer2 = #{answer2} ,
+	        question3 = #{question3} ,
+	        answer3 = #{answer3} ,
+	        question4 = #{question4} ,
+	        answer4 = #{answer4} ,
+	        date = #{date}  ,
+	        name = #{name} 
+        WHERE 
+	        id = #{id} 
+    ]]>
+    </update>
+
+    <delete id="delete">
+    <![CDATA[
+        DELETE FROM parent WHERE
+        id = #{id} 
+    ]]>
+    </delete>
+    
+    <select id="getById" resultMap="RM.Parent">
+	    SELECT <include refid="Parent.columns"/>
+	    <![CDATA[
+	        FROM parent 
+	        WHERE 
+		        id = #{id} 
+	    ]]>
+    </select>
+
+	<sql id="Parent.findPage.where">
+	    <trim prefix="WHERE" prefixOverrides="AND|OR" >
+		       <if test="id !=null">
+		            AND id = #{id}
+		       </if>
+		       <if test="password !=null">
+		            AND password = #{password}
+		       </if>
+		       <if test="mail !=null">
+		            AND mail = #{mail}
+		       </if>
+		       <if test="phone !=null">
+		            AND phone = #{phone}
+		       </if>
+		       <if test="question1 !=null">
+		            AND question1 = #{question1}
+		       </if>
+		       <if test="answer1 !=null">
+		            AND answer1 = #{answer1}
+		       </if>
+		       <if test="question2 !=null">
+		            AND question2 = #{question2}
+		       </if>
+		       <if test="answer2 !=null">
+		            AND answer2 = #{answer2}
+		       </if>
+		       <if test="question3 !=null">
+		            AND question3 = #{question3}
+		       </if>
+		       <if test="answer3 !=null">
+		            AND answer3 = #{answer3}
+		       </if>
+		       <if test="question4 !=null">
+		            AND question4 = #{question4}
+		       </if>
+		       <if test="answer4 !=null">
+		            AND answer4 = #{answer4}
+		       </if>
+	    </trim>	
+	</sql>
+	 
+    <select id="findPageCount" resultType="java.lang.Integer">
+        SELECT count(*) FROM parent <include refid="Parent.findPage.where"/>    
+    </select>
+    
+    <select id="findPage" resultMap="RM.Parent">
+    	SELECT <include refid="Parent.columns"/> FROM parent 
+		<include refid="Parent.findPage.where"/>
+		<if test="sortColumns != null" >
+			order by #{sortColumns}
+		</if>
+		<include refid="common.MySql_Pagination" />
+    </select>
+    
+    <select id="query" resultMap="RM.Parent">
+    	SELECT <include refid="Parent.columns"/> FROM parent 
+		<include refid="Parent.findPage.where"/>
+		<if test="sortColumns != null" >
+			order by #{sortColumns}
+		</if>
+    </select>
+
+	
+</mapper>
+
