@@ -8,7 +8,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>
-	宜居宝宝云端管理平台
+	CMK云端管理平台
 </title>
 <script>
 if (window != top){
@@ -40,7 +40,7 @@ if (window != top){
 </div>
 
     <div class="all">
-        <div class="ttlogo">宜居宝宝云端管理平台</div>
+        <div class="ttlogo">CMK云端管理平台</div>
         <div id="topbar">
         	<!--  
             <ul>
@@ -107,12 +107,12 @@ if (window != top){
     </div>
     <div class="tongtu_info">
         <div class="tongtu_info_title">
-            <span>宜居宝宝云端管理平台是集租房管理、发布、推广的综合服务云平台，加入它您可以：</span>
+            <span>CMK云端管理平台是集监控、管理Android手机APP的云平台，加入它您可以：</span>
         </div>
         <div class="tongtu_info_details">
             <ul>
-                <li><em></em><span>管理自己的租房</span></li>
-                <li><em></em><span>推广自己的租房</span></li>
+                <li><em></em><span>管理Android手机的APP</span></li>
+                <li><em></em><span>监控儿童使用APP的情况</span></li>
             </ul>
         </div>
         <div class="tongtu_info_title">

@@ -24,15 +24,8 @@
 			<mapper resource="sqlmap/system/SmsLogSqlMap.xml" />
 			<mapper resource="sqlmap/system/TradeLogSqlMap.xml" />
 			
-			<mapper resource="sqlmap/developer/AppsSqlMap.xml" />
-			<mapper resource="sqlmap/developer/AppRunSqlMap.xml" />
-			<mapper resource="sqlmap/developer/AppCostSqlMap.xml" />
-			
-			<mapper resource="sqlmap/zhouse/HouseInfoSqlMap.xml" />
-			<mapper resource="sqlmap/zhouse/NewsSqlMap.xml" />
-			<mapper resource="sqlmap/zhouse/UserHouseSqlMap.xml" />
-			<mapper resource="sqlmap/zhouse/VhuserHouseSqlMap.xml" />
-			<mapper resource="sqlmap/zhouse/HouseTypeSqlMap.xml" />
+			<mapper resource="sqlmap/cmk/ParentSqlMap.xml" />
+			<mapper resource="sqlmap/cmk/ChildrenSqlMap.xml" />
 			
 			<mapper resource="sqlmap/system/WebLocationSqlMap.xml" />
 			
